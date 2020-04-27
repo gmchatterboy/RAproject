@@ -83,10 +83,14 @@ prontera,100,100,4	script	Lotto Gurl	4_F_EDEN_OFFICER,{
 				close;
 
 			case 2: // View My Ticket
+				query_sql "SELECT `tix_code`,`end_date`,`one`,`two`,`three`,`four`,`five`,`p_ball` FROM `lotto` WHERE `char_id` = "+.getcharid(0)+";",.@tixcode,.@draw$,.@one,.@two,.@three,.@four,.@five,.@pball;
 				mes .@npcName$;
 				mes "MEGA bRO LOTTO 6/49";
 				mes "Your Ticket:";
-				
+				mes ""+.@i[.@i]+" "+.@one[.@i]+" "+.@two[.@i]+" "+.@three[.@i]+" "+.@four[.@i]+" "+.@five[.@i]+" "+.@pball[.@i]+"";
+				mes "Draw on: "+.@draw$+" TixID: "+.@tixcode+"";
+				close;
+
 			case 3: // Later
 			close;
 
