@@ -25,7 +25,9 @@ prontera,100,100,4	script	Lotto Gurl	4_F_EDEN_OFFICER,{
 			switch(select("~Buy Ticket:~View my Ticket:~Later")){
 		
 			case 1: // Buy Ticket
+				//Fetch ticket code of the player in mySQLdb
 				query_sql "SELECT `tix_code` FROM `lotto` WHERE `char_id` = "+getcharid(0)+";",.@tix_code;
+				if(!.@tix_code){ #lcode = 0;} // Reset bypass to get new lotto ID
 
 				mes .@npcName$;
 				mes "Tiket Price: "+.@tix_price+"";
@@ -41,7 +43,7 @@ prontera,100,100,4	script	Lotto Gurl	4_F_EDEN_OFFICER,{
 				}// End 3rd Menu
 
 			TIX:
-				if(#cashpoits<(.@tix_price*.@count_tix)){
+				if(#cashpoits<(.@tix_price*.@count_tix)){ // Check if cash points is enough
 				mes .@npcName$;
 				mes "I'm SORRY you dont have enough CASH POINTS, come to me LATER!";
 				close;}
@@ -53,23 +55,40 @@ prontera,100,100,4	script	Lotto Gurl	4_F_EDEN_OFFICER,{
 				.@num4 = rand (1,99);
 				.@num5 = rand (1,99);
 				.@num6 = rand (1,99);
-				if(!#lcode){.@tix_code = rand (1,9999);}
 
+			if(!#lcode){.@tix_code = rand (1,9999);} //Generate ticket code for each player
+				query_sql "SELECT `tix_code` FROM `lotto` WHERE `tix_code` = "+.@tix_code+";",.@tix_code;
+				query_sql "SELECT `tix_code` FROM `lotto` WHERE `char_id` = "+.getcharid(0)+";",.@tixcode;
+			if(.@tix_code)||(!.@tixcode){.@tix_code = rand (1,9999);} // Regenerate ticket code if other player get the code
+
+				.@cnt = 1; // Ticket counter start
+				// Encode ticket and player information in lotto DB
 				query_sql("INSERT INTO lotto (`tix_code`,`char_id`,`char_name`,`tix_date`,`end_date`,`one`,`two`,`three`,`four`,`five`,`p_ball`) VALUES ('.@tix_code',"+getcharid(0)+",'"+strcharinfo(0)+"','"+gettimestr("%Y-%m-%d",21)+"','"+gettimestr("%Y-%m-%d",21)+"','.@num1','.@num2','.@num3','.@num4','.@num5','.@num6');");
 				
 				mes .@npcName$;
 				mes "MEGA bRO LOTTO 6/49";
 				mes "Ticket: "+.@num1+" "+.@num2+" "+.@num3+" "+.@num4+" "+.@num5+" "+.@num6+" ";
 				mes "Draw on:"+.@draw$+"";
-				mes "CP: "+.@t_cashpts+"";
-				#CASHPOINTS = #CASHPOINTS - .@tix_price;
-				#lcode = 1;
+				mes "CP: "+.@t_cashpts+" Tix#: "+.@cnt+"";
+				#CASHPOINTS = #CASHPOINTS - .@tix_price; // Cashpoints payment
+				#lcode = 1; 							 // Bypass On
+				.@cnt = .@cnt + 1;						 // Ticket increasing counter
+				if(.@count_tix == 5){ .@count_tix = 4; goto TIX; }
+				if(.@count_tix == 4){ .@count_tix = 3; goto TIX; }
+				if(.@count_tix == 3){ .@count_tix = 2; goto TIX; }
+				if(.@count_tix == 2){ .@count_tix = 1; goto TIX; }
+
+				.@count_tix = 0;
+				.@cnt = 0;
 				close;
 
-
 			case 2: // View My Ticket
+				mes .@npcName$;
+				mes "MEGA bRO LOTTO 6/49";
+				mes "Your Ticket:";
+				
 			case 3: // Later
-					close;
+			close;
 
 			}// End 2nd Menu
 
