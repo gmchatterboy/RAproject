@@ -1,0 +1,103 @@
+prontera,100,100,4	script	Lotto Gurl	4_F_EDEN_OFFICER,{
+.@npcName$ = "--[Lotto]--";
+
+
+	mes .@npcName$;
+	mes "Hello Traveler!";
+	next;
+
+	switch(select("~Winning POT:~Get Ticket:~Claim Prize")){
+
+	case 1: // Winning Pot
+
+			mes .@npcName$;
+			mes "JACKPOT PRIZE: "+.@jackpot+"";
+			mes "Draw Date: "+.@ddate+"";
+			close;
+
+
+	case 2: // Get Ticket
+			mes .@npcName$;
+			mes "Tiket Price: "+.@tix_price+"";
+			mes "Hello traveller! what can i do for you?";
+			next;
+
+			switch(select("~Buy Ticket:~View my Ticket:~Later")){
+		
+			case 1: // Buy Ticket
+				query_sql "SELECT `tix_code` FROM `lotto` WHERE `char_id` = "+getcharid(0)+";",.@tix_code;
+
+				mes .@npcName$;
+				mes "Tiket Price: "+.@tix_price+"";
+				mes "How many Ticket you buy?";
+				next;
+
+				switch(select("~ 1x Ticket:~ 2x Ticket:~ 3x Ticket:~ 4x Ticket:~ 5x Ticket")){
+				case 1:	.@count_tix = 1; goto TIX:
+				case 2:	.@count_tix = 2; goto TIX:
+				case 3:	.@count_tix = 3; goto TIX:
+				case 4:	.@count_tix = 4; goto TIX:
+				case 5:	.@count_tix = 5; goto TIX:
+				}// End 3rd Menu
+
+			TIX:
+				if(#cashpoits<(.@tix_price*.@count_tix)){
+				mes .@npcName$;
+				mes "I'm SORRY you dont have enough CASH POINTS, come to me LATER!";
+				close;}
+				
+				// get ticket number generator
+				.@num1 = rand (1,99);
+				.@num2 = rand (1,99);
+				.@num3 = rand (1,99);
+				.@num4 = rand (1,99);
+				.@num5 = rand (1,99);
+				.@num6 = rand (1,99);
+				if(!#lcode){.@tix_code = rand (1,9999);}
+
+				query_sql("INSERT INTO lotto (`tix_code`,`char_id`,`char_name`,`tix_date`,`end_date`,`one`,`two`,`three`,`four`,`five`,`p_ball`) VALUES ('.@tix_code',"+getcharid(0)+",'"+strcharinfo(0)+"','"+gettimestr("%Y-%m-%d",21)+"','"+gettimestr("%Y-%m-%d",21)+"','.@num1','.@num2','.@num3','.@num4','.@num5','.@num6');");
+				
+				mes .@npcName$;
+				mes "MEGA bRO LOTTO 6/49";
+				mes "Ticket: "+.@num1+" "+.@num2+" "+.@num3+" "+.@num4+" "+.@num5+" "+.@num6+" ";
+				mes "Draw on:"+.@draw$+"";
+				mes "CP: "+.@t_cashpts+"";
+				#CASHPOINTS = #CASHPOINTS - .@tix_price;
+				#lcode = 1;
+				close;
+
+
+			case 2: // View My Ticket
+			case 3: // Later
+					close;
+
+			}// End 2nd Menu
+
+
+
+
+
+
+	case 3: // Claim Prize
+	}// End 1st menu
+
+
+
+}
+/*
+DROP TABLE IF EXISTS `lotto`;
+CREATE TABLE  `lotto` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `char_id` int(7) unsigned NOT NULL,
+  `char_name` varchar(45) NOT NULL,
+  `tix_date` date NOT NULL,
+  `end_date` date NOT NULL,
+  `one` int(10) unsigned NOT NULL,
+  `two` int(10) unsigned NOT NULL,
+  `three` int(10) unsigned NOT NULL,
+  `four` int(10) unsigned NOT NULL,
+  `five` int(10) unsigned NOT NULL,
+  `p_ball` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;
+*/
