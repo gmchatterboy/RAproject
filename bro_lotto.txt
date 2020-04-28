@@ -1,3 +1,12 @@
+/*
+--------------------------------------------------------------------
+https://github.com/rathena/rathena/wiki/Emotion-List-Constants
+Compatible Emulator: rAthena
+Script by: GM Chatterboy
+Version: 1.0 28-04-2020
+--------------------------------------------------------------------
+*/
+
 prontera,100,100,4	script	Lotto Gurl	4_F_EDEN_OFFICER,{
 .@npcName$ = "--[Lotto]--";
 
