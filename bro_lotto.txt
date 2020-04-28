@@ -67,7 +67,7 @@ prontera,100,100,4	script	Lotto Gurl	4_F_EDEN_OFFICER,{
 				
 				mes .@npcName$;
 				mes "MEGA bRO LOTTO 6/49";
-				mes "Ticket: "+.@num1+" "+.@num2+" "+.@num3+" "+.@num4+" "+.@num5+" "+.@num6+" ";
+				mes "Ticket: "+.@num1+" "+.@num2+" "+.@num3+" "+.@num4+" "+.@num5+" "+.@num6+"";
 				mes "Draw on:"+.@draw$+"";
 				mes "CP: "+.@t_cashpts+" Tix#: "+.@cnt+"";
 				#CASHPOINTS = #CASHPOINTS - .@tix_price; // Cashpoints payment
@@ -102,9 +102,68 @@ prontera,100,100,4	script	Lotto Gurl	4_F_EDEN_OFFICER,{
 
 
 	case 3: // Claim Prize
+		close;
+		
+	case 4: // GM Command
+			mes .@npcName$;
+			mes "Hello GM: "+.@gmName+"";
+			mes "Please select a Command...";
+			
+			switch(select("~Update Lotto Pot:~Terminate Lotto NPC")){
+				
+				case 1: // Update Lotto Pot
+					mes .@npcName$;
+					mes "Please input how much the Prize!";
+					next;
+					
+					while( input( .@pot, 1, 9999 ) != 0 ) {
+					mes .@npcName$;
+					mes "Put a number between 1 and 9999.";
+					next;
+					
+					mes .@npcName$;
+					query_sql("INSERT INTO lotto_pot (`pot`,`char_id`,`char_name`) VALUES ('.@pot',"+getcharid(0)+",'"+strcharinfo(0)+"');");
+					
+					mes "LOTTO DRAW POT";
+					mes "Prize: "+.@pot+"";
+					close;
+
+
+
+				case 2: // Terminate Lotto NPC
+				close;
+				
+				
+			}
+			
+			
+
 	}// End 1st menu
-
-
+	
+	
+OnInit:
+OnClock1800:
+		announce "Every 26th of the month event start bRO Lotto Draw, 7:00PM.",bc_all,0xfffc00;
+		end;
+		
+OnClock1900:		
+	if(gettime(DT_DAYOFMONTH)==26)
+		{announce "LOTTO Draw is DONE Check your ticket now!",bc_all,0x0000FF;	
+	
+				// get ticket number generator
+				.@draw1 = rand (1,99);
+				.@draw2 = rand (1,99);
+				.@draw3 = rand (1,99);
+				.@draw4 = rand (1,99);
+				.@draw5 = rand (1,99);
+				.@draw6 = rand (1,99);
+				
+	.@char_id = 50003;
+	query_sql("UPDATE `one`,`two`,`three`,`four`,`five`,`p_ball`, SET `one` = "+.@draw1+",`two` = "+.@draw2+",`three` = "+.@draw3+",`four` = "+.@draw4+",`five` = "+.@draw5+",`p_ball` = "+.@draw6+", WHERE `char_id` = '"+.@char_id+"';");
+	
+	
+	}
+		end;
 
 }
 /*
@@ -121,6 +180,22 @@ CREATE TABLE  `lotto` (
   `four` int(10) unsigned NOT NULL,
   `five` int(10) unsigned NOT NULL,
   `p_ball` int(10) unsigned NOT NULL,
+  `win` int(11) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;
+
+DROP TABLE IF EXISTS `lotto_pot`;
+CREATE TABLE  `lotto` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `pot` int(10) unsigned NOT NULL,
+  `char_id` int(7) unsigned NOT NULL,
+  `char_name` varchar(45) NOT NULL,
+  `one` int(10) unsigned NOT NULL DEFAULT '0',
+  `two` int(10) unsigned NOT NULL DEFAULT '0',
+  `three` int(10) unsigned NOT NULL DEFAULT '0',
+  `four` int(10) unsigned NOT NULL DEFAULT '0',
+  `five` int(10) unsigned NOT NULL DEFAULT '0',
+  `p_ball` int(10) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;
 */
