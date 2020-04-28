@@ -62,9 +62,11 @@ prontera,100,100,4	script	Lotto Gurl	4_F_EDEN_OFFICER,{
 			if(.@tix_code)||(!.@tixcode){.@tix_code = rand (1,9999);} // Regenerate ticket code if other player get the code
 
 				.@cnt = 1; // Ticket counter start
+				.@pot = .@tix_price; // Add POT
 				// Encode ticket and player information in lotto DB
 				query_sql("INSERT INTO lotto (`tix_code`,`char_id`,`char_name`,`tix_date`,`end_date`,`one`,`two`,`three`,`four`,`five`,`p_ball`) VALUES ('.@tix_code',"+getcharid(0)+",'"+strcharinfo(0)+"','"+gettimestr("%Y-%m-%d",21)+"','"+gettimestr("%Y-%m-%d",21)+"','.@num1','.@num2','.@num3','.@num4','.@num5','.@num6');");
-				
+				query_sql("UPDATE `pot`, SET `pot` = "+.@pot+",`two` = "+.@draw2+",`three` = "+.@draw3+",`four` = "+.@draw4+",`five` = "+.@draw5+",`p_ball` = "+.@draw6+", WHERE `char_id` = '"+.@char_id+"';");				
+
 				mes .@npcName$;
 				mes "MEGA bRO LOTTO 6/49";
 				mes "Ticket: "+.@num1+" "+.@num2+" "+.@num3+" "+.@num4+" "+.@num5+" "+.@num6+"";
