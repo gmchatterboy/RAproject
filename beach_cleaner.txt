@@ -1,0 +1,93 @@
+/*-------------------------------------------------------
+
+	Emulator: rAthena
+	Script by: GM Chatterboy
+	Version: 1.1 04-29-2020
+	NPC: Beach Cleaner
+
+/-------------------------------------------------------*/
+
+comodo,193,117,4	script	Beach Cleaner	845,{
+
+	set .@CleanerName$,"[^FF0000Beach Cleaner^000000]";
+	set .@CleanItem,637;		// Item to gather
+	set .@CIQuantity,50;		//Quantity of loot item
+	set .@PTime,10;				//Delay of Making
+	
+	if(gettimetick(2) - BeachDelayTime < (60 * 60 * 2)) goto Ltdelay;
+	emotion ET_MERONG;
+	mes .@CleanerName$;
+	mes "Urrgh! Those tourists are irrational! ~ Oh, hey! Would you mind to help me clean the beach?";
+	next;
+	
+	switch(select("Yes! that's why I'm here.:No, I'm busy at the moment.")) {
+	
+Case 1:
+	if(countitem(.@CleanItem)<.@CIQuantity){
+		mes .@CleanerName$;
+		mes "Okay first, gather ^FF0000"+.@CIQuantity+" Pc(s) "+(getitemname(.@CleanItem))+"^000000 for me then come back here.";
+		mes "***********************";
+		mes "~ ^0055FF"+countitem(.@CleanItem)+"pc(s)^000000 "+(getitemname(.@CleanItem))+" in your inventory.";
+		mes "***********************";
+		emotion ET_KIK;
+		end;
+	}else{
+		mes .@CleanerName$;
+		mes "Oh there you are! Okay let me handle this, give me those cleaning materials you gathered and I'll do the cleaning operation. Please wait for ^FF0000"+.@PTime+" Second(s)^000000 until I'm done.";
+		next;
+		progressbar "ffffff",.@PTime;
+		sleep2 rand(100,2000);
+		
+		mes .@CleanerName$;
+		mes "Phew! This is really a hard job, but thanks any ways I wouldn't make this fast without your help. Here take this as my token of appreciation.";
+		mes "~ ^FF0000Were Done!^000000~";
+		set BeachDelayTime,gettimetick(2);
+		emotion ET_BEST;
+		}	
+		set .@RandChance,rand(1,10);
+		if (.@RandChance < 2) {
+		// 5% chance to get the item		
+		getitem 533,25;
+		getitem 671,1;
+		getitem 2546,1;
+		getexp	10000,10000;
+		delitem .@CleanItem,.@CIQuantity;
+		}
+		else if (.@RandChance == 5) {
+		// 10% chance to get the item
+		getitem 533,25;
+		getitem 671,1;
+		getitem 2441,1;
+		getexp	10000,10000;
+		delitem .@CleanItem,.@CIQuantity;
+		}
+		else if ((.@RandChance > 6) && (.@RandChance < 10)) {
+		// 100% chance to get the item
+		getitem 533,25;
+		getitem 671,1;
+		getexp	10000,10000;
+		delitem .@CleanItem,.@CIQuantity;
+		}
+		else {
+		// 100% chance to get the item
+		getitem 533,25;
+		getitem 671,1;
+		getexp	10000,10000;
+		delitem .@CleanItem,.@CIQuantity;
+		}
+		end;
+		
+Case 2:
+	mes .@CleanerName$;
+	mes "OK see you later! ^_^";
+	emotion ET_OK;
+	end;
+	
+	}
+	
+Ltdelay:
+	mes .@CleanerName$;
+	mes "I don't need any ^FF0000"+(getitemname(.@CleanItem))+"^000000 for now, come back again tomorrow.";
+	emotion ET_SWEAT;
+	close;
+}
