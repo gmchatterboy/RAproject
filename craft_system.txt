@@ -1,0 +1,168 @@
+/*-------------------------------------------------------
+
+	Emulator: rAthena
+	Script by: GM Chatterboy
+	Version: 1.0 04-29-2020
+	NPC: Crafts Man
+
+/-------------------------------------------------------*/
+
+prontera,142,196,3	script	Craft's Man	63,{
+
+		emotion ET_THROB; //Love emoticon
+		mes "[Craft's Man]";
+		mes "We are here to provide one of the most unique Craft system!";
+		mes "I can help you to craft, but with only ^FF0000 Chance Rate^000000 of success.";
+		next;
+	
+		mes "[Craft's Man]";
+		mes "Choose what you want to craft...";
+		next;
+	
+	switch(select("~ Elven Arrow:~ Holy Water:~ Poison Bottle:~ Fire Element Converter:~ Water Elemental Converter:~ Earth Elemental Converter:~ Wind Elemental Converter")){
+		
+		case 1: // Elven Arrow
+				.@craft_item$ = "Elven Arrow";
+				.@item1 = 671;  .@qty1 = 1;
+				.@item2 = 7203; .@qty2 = 5;
+				.@item3 = 7201; .@qty3 = 5;
+				.@percent = 50;	.@mes = 3;
+				.@getitem = 1773; .@gqty = 5;
+				goto CONVO;
+				
+		case 2: // Holy Water
+				.@craft_item$ = "Holy Water";
+				.@item1 = 671;  .@qty1 = 2;
+				.@item2 = 713; .@qty2 = 1;
+				.@percent = 60;	.@mes = 2;
+				.@getitem = 523; .@gqty = 1;
+				goto CONVO;
+
+				
+		case 3: // Poison Bottle
+				.@craft_item$ = "Poison Bottle";
+				.@item1 = 671;  .@qty1 = 2;
+				.@item2 = 713; .@qty2 = 1;
+				.@item3 = 937; .@qty3 = 1;
+				.@item4 = 939; .@qty4 = 1;
+				.@item5 = 952; .@qty5 = 1;
+				.@item6 = 972; .@qty6 = 1;
+				.@item7 = 7033; .@qty7 = 1;
+				.@percent = 10;	.@mes = 7;
+				.@getitem = 678; .@gqty = 1;
+				goto CONVO;
+				
+		case 4: // Fire Element Converter
+				.@craft_item$ = "Fire Element";
+				.@item1 = 671;  .@qty1 = 2;
+				.@item2 = 904; .@qty2 = 3;
+				.@item3 = 7433; .@qty3 = 1;
+				.@percent = 10;	.@mes = 3;
+				.@getitem = 12114; .@gqty = 1;
+				goto CONVO;
+				
+		case 5: // Water Elemental Converter
+				.@craft_item$ = "Water Element";
+				.@item1 = 671;  .@qty1 = 2;
+				.@item2 = 946; .@qty2 = 3;
+				.@item3 = 7433; .@qty3 = 1;
+				.@percent = 10;	.@mes = 3;
+				.@getitem = 12115; .@gqty = 1;
+				goto CONVO;
+				
+		case 6: // Earth Elemental Converter
+				.@craft_item$ = "Earth Element";
+				.@item1 = 671;  .@qty1 = 2;
+				.@item2 = 947; .@qty2 = 3;
+				.@item3 = 7433; .@qty3 = 1;
+				.@percent = 10;	.@mes = 3;
+				.@getitem = 12116; .@gqty = 1;
+				goto CONVO;
+				
+		case 7: // Wind Elemental Converter
+				.@craft_item$ = "Wind Element";
+				.@item1 = 671;  .@qty1 = 2;
+				.@item2 = 947; .@qty2 = 3;
+				.@item3 = 7433; .@qty3 = 1;
+				.@percent = 10;	.@mes = 3;
+				.@getitem = 12117; .@gqty = 1;
+
+			}
+	
+	
+
+CONVO:
+		mes "[Craft's Man]";
+		mes "Hello there!";
+		mes "Your crafting a ^0000FF"+.@craft_item$+"^000000.";
+		next;
+		
+		mes "[Craft's Man]";
+		mes "I need these things:";
+		mes "^FF0000"+.@qty1+"x "+getitemname(.@item1)+"";
+		if(.@mes <= 2){	mes ""+.@qty2+"x "+getitemname(.@item2)+"";}
+		if(.@mes <= 3){ mes ""+.@qty3+"x "+getitemname(.@item3)+"";}
+		if(.@mes <= 4){ mes ""+.@qty4+"x "+getitemname(.@item4)+"";}
+		if(.@mes <= 5){ mes ""+.@qty5+"x "+getitemname(.@item5)+"";}
+		if(.@mes <= 6){ mes ""+.@qty6+"x "+getitemname(.@item6)+"";}
+		if(.@mes <= 7){ mes ""+.@qty7+"x "+getitemname(.@item7)+"";}
+		if(.@mes <= 8){ mes ""+.@qty8+"x "+getitemname(.@item8)+"";}
+		mes "^000000";
+		next;
+		
+		if(select("Yes!:Leave")==2){ close;}
+Craft:
+
+	if(.@mes <= 2){ if(countitem(.@item1)>.@qty1) || (countitem(.@item2)>.@qty2) { goto INC; }}
+	if(.@mes <= 3){ if(countitem(.@item1)>.@qty1) || (countitem(.@item2)>.@qty2) || (countitem(.@item3)>.@qty3) { goto INC; }}
+	if(.@mes <= 4){ if(countitem(.@item1)>.@qty1) || (countitem(.@item2)>.@qty2) || (countitem(.@item3)>.@qty3) (countitem(.@item4)>.@qty4) { goto INC; }}
+	if(.@mes <= 5){ if(countitem(.@item1)>.@qty1) || (countitem(.@item2)>.@qty2) || (countitem(.@item3)>.@qty3) (countitem(.@item4)>.@qty4) (countitem(.@item5)>.@qty5) { goto INC; }}
+	if(.@mes <= 6){ if(countitem(.@item1)>.@qty1) || (countitem(.@item2)>.@qty2) || (countitem(.@item3)>.@qty3) (countitem(.@item4)>.@qty4) (countitem(.@item5)>.@qty5) (countitem(.@item6)>.@qty6) { goto INC; }}
+	if(.@mes <= 7){ if(countitem(.@item1)>.@qty1) || (countitem(.@item2)>.@qty2) || (countitem(.@item3)>.@qty3) (countitem(.@item4)>.@qty4) (countitem(.@item5)>.@qty5) (countitem(.@item6)>.@qty6) (countitem(.@item7)>.@qty7) { goto INC; }}
+	if(.@mes <= 8){ if(countitem(.@item1)>.@qty1) || (countitem(.@item2)>.@qty2) || (countitem(.@item3)>.@qty3) (countitem(.@item4)>.@qty4) (countitem(.@item5)>.@qty5) (countitem(.@item6)>.@qty6) (countitem(.@item7)>.@qty7) (countitem(.@item8)>.@qty8) { goto INC; }}
+
+	specialeffect 101; //Effect Refine
+	delitem .@item1,.@qty1; 
+	if(.@mes <= 2){delitem .@item2,.@qty2;}
+	if(.@mes <= 3){delitem .@item3,.@qty3;}
+	if(.@mes <= 4){delitem .@item4,.@qty4;}
+	if(.@mes <= 5){delitem .@item5,.@qty5;}
+	if(.@mes <= 6){delitem .@item6,.@qty6;}
+	if(.@mes <= 7){delitem .@item7,.@qty7;}
+	if(.@mes <= 8){delitem .@item8,.@qty8;}
+	if(rand(100)<.@percent) {
+		specialeffect2 154; // Effect Success refine
+		getitem .@getitem,.@gqty;
+		mes "Here your item "+>@gqty+"x "+.@getitem+"!";
+		next;
+		
+		mes "[Craft's Man]";
+		mes "Do you want me to craft some more?";
+		next;
+		
+		menu "Yes",Craft,"No",Quit;
+	} else {
+		specialeffect2 155; // Effect Failed refine
+		mes "I'm sorry, but I have failed to craft the "+getitemname(.@getitem)+".";
+		mes " ";
+		mes "Do you want me to try again?";
+		next;
+		
+		menu "Yes",Craft,"No",Quit;
+		}
+		close;		
+INC:
+	emotion ET_HUK;
+	mes "[Craft's Man]";
+	mes "Please complete the required items. Come back again if you have it all.";
+	close;
+	
+Quit:
+	emotion ET_KIK;
+	mes "[Craft's Man]";
+	mes "Come and see me again!";
+	close;	
+	
+
+
+}
