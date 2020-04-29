@@ -1,106 +1,132 @@
-/*
---------------------------------------------------------------------
+//----------------------------------------------------//
 https://github.com/rathena/rathena/wiki/Emotion-List-Constants
-Compatible Emulator: rAthena
-Script by: GM Chatterboy
-Version: 1.0 28-04-2020
---------------------------------------------------------------------
+/*	Script by: GM Chatterboy
+	Emulator: rAthena
+	Version: 1.0
+	Date: 04-29-2020
+	NPC: E-Ticket Lotto 6/49 
 */
+//---------------------------------------------------//
 
-prontera,100,100,4	script	Lotto Gurl	4_F_EDEN_OFFICER,{
-.@npcName$ = "--[Lotto]--";
-
+prontera,143,229,5	script	Lotto Gurl	4_F_EDEN_OFFICER,{
+.@npcName$ = "--[LOTTO]--";
+.@tix_price = 100;
 
 	mes .@npcName$;
-	mes "Hello Traveler!";
+	mes "Hello Traveler! what can i do for you?";
+	emotion ET_QUESTION;
 	next;
 
-	switch(select("~Winning POT:~Get Ticket:~Claim Prize")){
+	switch(select("~ Winning POT:~ E-Ticket Option:~ Lotto Winner Info",( getgmlevel() < 99 )?"":"^FF0000~ GM Command^000000")){
 
 	case 1: // Winning Pot
-
+			query_sql "SELECT `pot` FROM `lotto_pot`;",.@jackpot;	// Fetch the POT value
 			mes .@npcName$;
-			mes "JACKPOT PRIZE: "+.@jackpot+"";
-			mes "Draw Date: "+.@ddate+"";
+			mes "JACKPOT PRIZE: ^0101DF"+callfunc("beautifyNumber", .@jackpot, ",")+"^000000 Cashpoints.";
+			mes "Draw Date:^0101DF Every 26th^000000 of the Month";
+			emotion ET_SURPRISE;
 			close;
 
 
-	case 2: // Get Ticket
+	case 2: // E-Ticket Option
 			mes .@npcName$;
-			mes "Tiket Price: "+.@tix_price+"";
+			mes "E-Ticket Price: ^FF0000"+callfunc("beautifyNumber", .@tix_price, ",")+"^000000 Cashpoints";
 			mes "Hello traveller! what can i do for you?";
 			next;
 
-			switch(select("~Buy Ticket:~View my Ticket:~Later")){
+			switch(select("~ Purchase E-Ticket:~ View my E-Ticket:~ Later")){
 		
-			case 1: // Buy Ticket
-				//Fetch ticket code of the player in mySQLdb
-				query_sql "SELECT `tix_code` FROM `lotto` WHERE `char_id` = "+getcharid(0)+";",.@tix_code;
-				if(!.@tix_code){ #lcode = 0;} // Reset bypass to get new lotto ID
-
+			case 1: // Purchase E-Ticket
 				mes .@npcName$;
-				mes "Tiket Price: "+.@tix_price+"";
-				mes "How many Ticket you buy?";
+				mes "E-Ticket Price: ^FF0000"+callfunc("beautifyNumber", .@tix_price, ",")+"^000000 Cashpoints";
+				mes "How many E-Ticket you will buy?";
 				next;
 
-				switch(select("~ 1x Ticket:~ 2x Ticket:~ 3x Ticket:~ 4x Ticket:~ 5x Ticket")){
-				case 1:	.@count_tix = 1; goto TIX:
-				case 2:	.@count_tix = 2; goto TIX:
-				case 3:	.@count_tix = 3; goto TIX:
-				case 4:	.@count_tix = 4; goto TIX:
-				case 5:	.@count_tix = 5; goto TIX:
+				switch(select("~ 1x E-Ticket:~ 2x E-Ticket:~ 3x E-Ticket:~ 4x E-Ticket:~ 5x E-Ticket")){
+				case 1:	.@count_tix = 1; goto TIX;
+				case 2:	.@count_tix = 2; goto TIX;
+				case 3:	.@count_tix = 3; goto TIX;
+				case 4:	.@count_tix = 4; goto TIX;
+				case 5:	.@count_tix = 5; goto TIX;
 				}// End 3rd Menu
 
 			TIX:
-				if(#cashpoits<(.@tix_price*.@count_tix)){ // Check if cash points is enough
-				mes .@npcName$;
-				mes "I'm SORRY you dont have enough CASH POINTS, come to me LATER!";
-				close;}
+				//Fetch codes from mySQLdb
+				query_sql "SELECT `reg_id` FROM `lotto` WHERE `char_id` = "+getcharid(0)+";",.@regId;
+				query_sql "SELECT `reg_id` FROM `lotto`;",.@tix_db;		// Fetch E-Ticket code value in DB
+				query_sql "SELECT `win` FROM `lotto`;",.@win_db;		// Fetch the win value
+				query_sql "SELECT `pot` FROM `lotto_pot`;",.@pot_db;	// Fetch the POT value
+
 				
-				// get ticket number generator
+				if(gettime(DT_DAYOFMONTH) == 26)&&(.@win_db){ // Disable the purchasing of E-Ticket on the day of Lotto Draw & un claimed prize
+					mes .@npcName$;
+					mes "E-Ticket is temporary OFFLINE will be open tomorrow.";
+					close;
+				}
+				
+				if(!.@regId){ #lcode = 0;} 					// Reset bypass to get new lotto ID
+				if(#CASHPOINTS<(.@tix_price*.@count_tix)){	// Check if cash points is enough
+					mes .@npcName$;
+					mes "I'm SORRY you dont have enough CASH POINTS, come to me LATER!";
+					close;}
+				
+				if(!#lcode){
+					.@regId = rand (1,9999); //Generate E-Ticket code for new player
+					while(.@regId == .@tix_db){ .@regId = rand (1,9999);}
+				}
+				// get E-Ticket number generator
 				.@num1 = rand (1,99);
 				.@num2 = rand (1,99);
 				.@num3 = rand (1,99);
 				.@num4 = rand (1,99);
 				.@num5 = rand (1,99);
 				.@num6 = rand (1,99);
+				if(!.@cnt) .@cnt = 1; 			// E-Ticket counter start
+				.@pot = .@pot_db + .@tix_price; // Add POT
+				
+				// Encode E-Ticket and player information in lotto DB
+				query_sql("INSERT INTO lotto (`reg_id`,`char_id`,`char_name`,`tix_date`,`end_date`,`one`,`two`,`three`,`four`,`five`,`p_ball`) VALUES ("+.@regId+","+getcharid(0)+",'"+strcharinfo(0)+"','"+gettimestr("%Y-%m-%d",21)+"','"+gettimestr("%Y-%m-%d",21)+"',"+.@num1+","+.@num2+","+.@num3+","+.@num4+","+.@num5+","+.@num6+");");
+				query_sql("UPDATE `lotto_pot` SET `pot` = "+.@pot+" WHERE `char_id` = `char_id` ;"); // Update the POT value in db
 
-			if(!#lcode){.@tix_code = rand (1,9999);} //Generate ticket code for each player
-				query_sql "SELECT `tix_code` FROM `lotto` WHERE `tix_code` = "+.@tix_code+";",.@tix_code;
-				query_sql "SELECT `tix_code` FROM `lotto` WHERE `char_id` = "+.getcharid(0)+";",.@tixcode;
-			if(.@tix_code)||(!.@tixcode){.@tix_code = rand (1,9999);} // Regenerate ticket code if other player get the code
-
-				.@cnt = 1; // Ticket counter start
-				.@pot = .@tix_price; // Add POT
-				// Encode ticket and player information in lotto DB
-				query_sql("INSERT INTO lotto (`tix_code`,`char_id`,`char_name`,`tix_date`,`end_date`,`one`,`two`,`three`,`four`,`five`,`p_ball`) VALUES ('.@tix_code',"+getcharid(0)+",'"+strcharinfo(0)+"','"+gettimestr("%Y-%m-%d",21)+"','"+gettimestr("%Y-%m-%d",21)+"','.@num1','.@num2','.@num3','.@num4','.@num5','.@num6');");
-				query_sql("UPDATE `pot`, SET `pot` = "+.@pot+",`two` = "+.@draw2+",`three` = "+.@draw3+",`four` = "+.@draw4+",`five` = "+.@draw5+",`p_ball` = "+.@draw6+", WHERE `char_id` = '"+.@char_id+"';");				
-
-				mes .@npcName$;
-				mes "MEGA bRO LOTTO 6/49";
-				mes "Ticket: "+.@num1+" "+.@num2+" "+.@num3+" "+.@num4+" "+.@num5+" "+.@num6+"";
-				mes "Draw on:"+.@draw$+"";
-				mes "CP: "+.@t_cashpts+" Tix#: "+.@cnt+"";
+					mes .@npcName$;
+					mes "^0000FFMEGA bRO LOTTO 6/49^000000";
+					mes "E-Ticket: ^FF0000"+.@num1+" "+.@num2+" "+.@num3+" "+.@num4+" "+.@num5+" "+.@num6+"^000000";
+					mes "Draw on: ^FF000025th of this Month^000000";
+					mes "CP: ^FF0000"+.@tix_price+"^000000 Tix#: ^FF0000"+.@cnt+"^000000";
+					mes "Registration Code: ^FF0000"+.@regId+"^000000";
+					mes "Thank You!";
 				#CASHPOINTS = #CASHPOINTS - .@tix_price; // Cashpoints payment
 				#lcode = 1; 							 // Bypass On
-				.@cnt = .@cnt + 1;						 // Ticket increasing counter
-				if(.@count_tix == 5){ .@count_tix = 4; goto TIX; }
-				if(.@count_tix == 4){ .@count_tix = 3; goto TIX; }
-				if(.@count_tix == 3){ .@count_tix = 2; goto TIX; }
-				if(.@count_tix == 2){ .@count_tix = 1; goto TIX; }
+				.@cnt = .@cnt + 1;						 // E-Ticket increasing counter
+				if(.@count_tix == 5){ .@count_tix = 4; next; goto TIX; }
+				if(.@count_tix == 4){ .@count_tix = 3; next; goto TIX; }
+				if(.@count_tix == 3){ .@count_tix = 2; next; goto TIX; }
+				if(.@count_tix == 2){ .@count_tix = 1; next; goto TIX; }
 
 				.@count_tix = 0;
 				.@cnt = 0;
+				emotion ET_CHUPCHUP;
 				close;
 
-			case 2: // View My Ticket
-				query_sql "SELECT `tix_code`,`end_date`,`one`,`two`,`three`,`four`,`five`,`p_ball` FROM `lotto` WHERE `char_id` = "+.getcharid(0)+";",.@tixcode,.@draw$,.@one,.@two,.@three,.@four,.@five,.@pball;
-				mes .@npcName$;
-				mes "MEGA bRO LOTTO 6/49";
-				mes "Your Ticket:";
-				mes ""+.@i[.@i]+" "+.@one[.@i]+" "+.@two[.@i]+" "+.@three[.@i]+" "+.@four[.@i]+" "+.@five[.@i]+" "+.@pball[.@i]+"";
-				mes "Draw on: "+.@draw$+" TixID: "+.@tixcode+"";
-				close;
+			case 2: // View My E-Ticket
+			
+			// Gather information in mySql DB...
+			.@size = query_sql("SELECT `reg_id`,`one`,`two`,`three`,`four`,`five`,`p_ball` FROM `lotto` WHERE `char_id` = "+getcharid(0)+" order by char_id",.@regId,.@one,.@two,.@three,.@four,.@five,.@pball );
+			
+			if (!.@size){ // Verify if the list is empty
+					mes .@npcName$;
+					mes "You dont have a purchase E-Ticket yet!";
+					close;}			
+			
+					// View E-Ticket list
+					mes .@npcName$;
+					mes "^0000FFMEGA bRO LOTTO 6/49^000000";
+					mes "Reg#: ^FF0000"+.@regId+"^000000";
+					mes "Your E-Ticket:";
+				for(set .@i, 0; .@i < .@size; set .@i, .@i + 1){
+					mes ""+(.@i+1)+". ^088A29"+.@one[.@i]+"^000000 ^088A29"+.@two[.@i]+"^000000 ^088A29"+.@three[.@i]+"^000000 ^088A29"+.@four[.@i]+"^000000 ^088A29"+.@five[.@i]+"^000000 ^088A29"+.@pball[.@i]+"^000000 ";}
+					emotion ET_PH_FLAG;
+					close;
 
 			case 3: // Later
 			close;
@@ -108,43 +134,109 @@ prontera,100,100,4	script	Lotto Gurl	4_F_EDEN_OFFICER,{
 			}// End 2nd Menu
 
 
+	case 3: // Winner Lotto Info
+	
+		query_sql "SELECT `one`,`two`,`three`,`four`,`five`,`p_ball` FROM `lotto_pot`;",.@one,.@two,.@three,.@four,.@five,.@pball;
+		mes .@npcName$;
+		mes "The Winning number combination is:";
+		mes "~ ^088A29"+.@one+"^000000 ^088A29"+.@two+"^000000 ^088A29"+.@three+"^000000 ^088A29"+.@four+"^000000 ^088A29"+.@five+"^000000 ^088A29"+.@pball+"^000000";
 
-
-
-
-	case 3: // Claim Prize
-		close;
+		if(select("Winner List:Leave")==1{
+			
+			// Gather information in mySql DB...
+			.@size = query_sql("SELECT `char_name` FROM `lotto` WHERE `win` = '1' order by win",.@cname$ );
+			
+			if (!.@size){ // Verify if the list is empty
+					mes .@npcName$;
+					mes "List is empty yet!";
+					close;}			
+			
+					//Winner list
+					mes .@npcName$;
+					mes "^0000FFMEGA bRO LOTTO 6/49^000000";
+					mes "Winner List E-Ticket:";
+				for(set .@i, 0; .@i < .@size; set .@i, .@i + 1){
+					mes ""+(.@i+1)+". ^088A29"+.@win[.@i]+"^000000 ^088A29"+.@cname$[.@i]+"^000000 ";}
+					}close;
 		
 	case 4: // GM Command
-			mes .@npcName$;
-			mes "Hello GM: "+.@gmName+"";
-			mes "Please select a Command...";
+			if(getcharid(3)>2000000){close;}	// If the GM is not the ADMIN user end here!!!	
+	
+			// Fetch database value
+			query_sql "SELECT `pot`,`char_id` FROM lotto_pot WHERE `char_id` = "+getcharid(0)+";",.@pot_db,.@char_id;
 			
-			switch(select("~Update Lotto Pot:~Terminate Lotto NPC")){
+				mes .@npcName$;
+				mes "Hello "+strcharinfo(0)+"";
+				mes "Please select a Command...";
+				next;
+			
+			switch(select("~ Update Lotto Pot:~ Change default value Pot:~ Empty Lotto List")){
 				
 				case 1: // Update Lotto Pot
 					mes .@npcName$;
+					mes "Current Pot: ^FF0000"+callfunc("beautifyNumber", .@pot_db, ",")+"^000000 Cashpoints";
 					mes "Please input how much the Prize!";
 					next;
 					
-					while( input( .@pot, 1, 9999 ) != 0 ) {
+				while( input( .@inpot, 1, 9999 ) != 0 ) {
 					mes .@npcName$;
-					mes "Put a number between 1 and 9999.";
+					mes "Put a number between ^FF0000 1^000000 upto ^FF0000 9999^000000."; 
+					close;}
 					next;
 					
+				.@pot = .@pot_db +.@inpot;
+				// Register the player E-Ticket in DB if not yet in the list
+				if(!.@char_id){query_sql("INSERT INTO lotto_pot (`pot`,`char_id`,`char_name`) VALUES ('"+.@pot+"',"+getcharid(0)+",'"+strcharinfo(0)+"');");}
+				// Update the POT in DB
+				if(.@char_id){query_sql("UPDATE `lotto_pot` SET `pot` = "+.@pot+" WHERE `char_id` = "+getcharid(0)+";");}
 					mes .@npcName$;
-					query_sql("INSERT INTO lotto_pot (`pot`,`char_id`,`char_name`) VALUES ('.@pot',"+getcharid(0)+",'"+strcharinfo(0)+"');");
-					
 					mes "LOTTO DRAW POT";
-					mes "Prize: "+.@pot+"";
+					mes "Prize: ^FF0000"+callfunc("beautifyNumber", .@pot, ",")+"^000000 Cashpoints.";
 					close;
 
+				case 2: // Change default value Pot
+					mes .@npcName$;
+					mes "Current Pot: ^FF0000"+callfunc("beautifyNumber", .@pot_db, ",")+"^000000 Cashpoints.";
+					mes "Are you sure to change the Value of the POT?";
+					next;
+					
+				// Menu
+				if(select("Yes.:No.")==2){close;}
+				
+				// Input value
+				while( input( .@inpot, 1, 9999 ) != 0 ) {
+					mes .@npcName$;
+					mes "Put a number between ^FF0000 1^000000 and ^FF0000 9999^000000."; 
+					close;}
+					next;
 
-
-				case 2: // Terminate Lotto NPC
+					mes .@npcName$;
+					mes "Pot Default value is ^FF0000"+callfunc("beautifyNumber", .@inpot, ",")+"^000000 Cashpoints";
+					
+				// Update the value of POt as Default
+				query_sql("UPDATE `lotto_pot` SET `pot` = "+.@inpot+" WHERE `char_id` = "+getcharid(0)+";");
 				close;
 				
+				case 3: // Trancate Lotto List 
+					mes .@npcName$;
+					mes "Are you sure to clear the LOTTO database?";
+					mes "Today is: ^FF0000"+gettime(DT_DAYOFMONTH)+" Day^000000 of the month!";
+					next;
+					
+				if(select("Yes!:No.")==2){ close;}
+				if(gettime(DT_DAYOFMONTH) <= 26){
+					mes .@npcName$;
+					mes "Sorry Sir the Lotto Draw is not yet done to clear the database...";
+					close;
+					}
 				
+					mes .@npcName$;
+					mes "There you go the LOTTO database is EMPTY!";
+				query_sql "	TRUNCATE TABLE `lotto`";
+				.@reset = 0;
+				query_sql("UPDATE `lotto_pot` SET `one` = "+.@reset+",`two` = "+.@reset+",`three` = "+.@reset+",`four` = "+.@reset+",`five` = "+.@reset+",`p_ball` = "+.@reset+" WHERE `char_id` = "+getcharid(0)+" ;");
+				specialeffect2 119; // Effect Success Clear log.
+				close;
 			}
 			
 			
@@ -153,15 +245,19 @@ prontera,100,100,4	script	Lotto Gurl	4_F_EDEN_OFFICER,{
 	
 	
 OnInit:
-OnClock1800:
-		announce "Every 26th of the month event start bRO Lotto Draw, 7:00PM.",bc_all,0xfffc00;
-		end;
+	OnClock0600: // 6AM
+	OnClock0900: // 9AM
+	OnClock1200: // 12PM
+	OnClock1500: // 3PM
+	OnClock1800: // 6PM
+		announce "Every 26th of the month event BesprenRO 6/49 Lotto Draw, 7:00PM.",bc_all,0xfffc00;
 		
-OnClock1900:		
-	if(gettime(DT_DAYOFMONTH)==26)
-		{announce "LOTTO Draw is DONE Check your ticket now!",bc_all,0x0000FF;	
+	OnClock1900: // 7PM
+		
+		if(gettime(DT_DAYOFMONTH)==26) /* Draw Date 26th Day */
+		{announce "LOTTO Draw is DONE Check your E-Ticket now!",bc_all,0x0000FF;
 	
-				// get ticket number generator
+				// get E-Ticket number generator
 				.@draw1 = rand (1,99);
 				.@draw2 = rand (1,99);
 				.@draw3 = rand (1,99);
@@ -169,18 +265,15 @@ OnClock1900:
 				.@draw5 = rand (1,99);
 				.@draw6 = rand (1,99);
 				
-	.@char_id = 50003;
-	query_sql("UPDATE `one`,`two`,`three`,`four`,`five`,`p_ball`, SET `one` = "+.@draw1+",`two` = "+.@draw2+",`three` = "+.@draw3+",`four` = "+.@draw4+",`five` = "+.@draw5+",`p_ball` = "+.@draw6+", WHERE `char_id` = '"+.@char_id+"';");
 	
-	
-	}
-		end;
-
+		query_sql("UPDATE `one`,`two`,`three`,`four`,`five`,`p_ball`, SET `one` = "+.@draw1+",`two` = "+.@draw2+",`three` = "+.@draw3+",`four` = "+.@draw4+",`five` = "+.@draw5+",`p_ball` = "+.@draw6+", WHERE `char_id` = `char_id` ;");
+		}end;
 }
 /*
 DROP TABLE IF EXISTS `lotto`;
 CREATE TABLE  `lotto` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `reg_id` int(10) unsigned NOT NULL,
   `char_id` int(7) unsigned NOT NULL,
   `char_name` varchar(45) NOT NULL,
   `tix_date` date NOT NULL,
@@ -196,7 +289,7 @@ CREATE TABLE  `lotto` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;
 
 DROP TABLE IF EXISTS `lotto_pot`;
-CREATE TABLE  `lotto` (
+CREATE TABLE  `lotto_pot` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `pot` int(10) unsigned NOT NULL,
   `char_id` int(7) unsigned NOT NULL,
@@ -209,4 +302,5 @@ CREATE TABLE  `lotto` (
   `p_ball` int(10) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;
+
 */
