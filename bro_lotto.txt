@@ -176,36 +176,36 @@ prontera,143,229,5	script	Lotto Gurl	4_F_EDEN_OFFICER,{
 					mes .@npcName$;
 					mes "Please input Reference #:";
 					next;
-					
-					input(.@ref,1,9999);
-					
-					if(.@ref == 0){
+				
+				.@size = query_sql( "select reg_id, from lotto where id > 0 order by id ASC",.@regId);
+				if(!.@size){
 					mes .@npcName$;
-					mes "--- ^DF013AERROR 404^000000 ---";
-					soundeffect "error_pin.wav",0;
-					close;}
+					mes "The Lotto List is EMPTY!";
+					close;
+				}				
 
-				//Fetch data from DB
-				query_sql "SELECT `char_name`, `win` FROM lotto WHERE `reg_id` = '"+.@ref+"';",.@name$,.@win;
-				if(!getarraysize(.@name$)){
-					mes .@npcName$;
-					mes "^FF0000 ERROR 404! ^000000."; 
-					mes "    --- NOT FOUND ---      ";
-					soundeffect "error_pin.wav",0;
-					close;}
+				// Menu
+				.@Menu$ = "";
+				for( set .@i,0; .@i < .@size; set .@i,.@i + 1 )
+				.@Menu$ = .@Menu$ +"^FF0000("+( .@i+1 )+".)^000000 ^088A29"+.@regId[.@i]+"^000000:";
+				.@Select = select( .@Menu$ ) - 1;
+				.refference = .@regId[.@Select];				
 					
+				//Fetch data from DB
+				query_sql "SELECT `char_name`, `win` FROM lotto WHERE `reg_id` = '"+.refference+"';",.@charName$,.@win;
+
 				if(.@win==1){
 					mes .@npcName$;
-					mes "Name: ^FF0000"+.@name$+"^000000";
-					mes "Ref#: ^FF0000"+.@ref+"^000000";
+					mes "Name: ^FF0000"+.@charName$+"^000000";
+					mes "Ref#: ^FF0000"+.refference+"^000000";
 					mes " ---[^04B404 Already Updated! ^000000]---";
 					close;}
 					
 					next;
 
 					mes .@npcName$;
-					mes "CharName: ^FF0000"+.@name$+"^000000";
-					mes "Ref#: ^FF0000"+.@ref+"^000000";
+					mes "CharName: ^FF0000"+.@charName$+"^000000";
+					mes "Ref#: ^FF0000"+.refference+"^000000";
 					
 					switch(select("~ Correct:~ Cancelation:~ Leave")){
 						case 1: .@win = 1; goto Encode;
