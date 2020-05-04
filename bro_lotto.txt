@@ -6,7 +6,7 @@
 	NPC: E-Ticket Lotto 6/49 
 ------------------------------------------------------*/
 
-prontera,143,229,5	script	Lotto Gurl	4_F_EDEN_OFFICER,{
+prontera,143,229,5	script	Lotto Gurl	831,{
 .@npcName$ = "--[LOTTO]--";
 .@tix_price = 100;
 
