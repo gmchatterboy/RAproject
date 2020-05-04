@@ -1,0 +1,484 @@
+//*********************************************************************
+//	VIP System for eAthena servers Version 3.0
+//*********************************************************************
+//	It allows you to boost experience and drop rate for players who donate
+//	for a specified amount of days.
+//	It makes use of account's GM Levels to specify the account type,
+//	by default values are these:
+//	all of them, of course, customizable ;).
+// ¡Therefore, you can also set =atcommands= for every account level in
+// [yourserver]/conf/atcommand_athena.conf ! Isn't that great?! :D
+//	In other words, VIP players can have access to more @commands than
+//	normal users if you want. This will add more value to the service.
+//
+//	Add, List, Modify and Remove VIP accounts via whisper to this NPC.
+//	Manage VIP accounts in-game! Just whisper any text to the npc "vip"
+//	to access the VIP management menu.
+//
+//	This script requires some database modifications for it to work,
+//	check them at the original post where I posted this script.
+//	URI:	
+//
+//	Created by: Victor H. Olvera (VicThor)
+//	If you like this, please donate to paypal: victorolvera.01@gmail.com
+//	I'd really like to make more scripts like this, so help if you can!
+//
+//	If you want any special modification or adaptation of this script,
+//	please! feel free to e-mail me at vhocar@gmail.com I'm $ure I can
+//	provide you with something according to your need$ :)
+// Modify by java@rathenaorg or java@idathena.org ====> compatible for both servers
+//¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+-	script	vip	-1,{
+
+OnInit: // Auto Initialize when the server is Online
+	bindatcmd "vip",strnpcinfo(3)+"::OnWhisperGlobal",99,0; // GM Level can only access this wispher
+	end;
+	
+OnPCLoginEvent: // Auto initialize when all the player log-in
+
+	
+	//Fetch DB information
+	query_sql ("SELECT `vip_id` FROM vip_db WHERE `account_id` = '"+(getcharid(3))+"';",.@accountType$);
+
+	// If account type is normal END here...
+	if (!getarraysize(.@accountType$)){ end; }
+
+//**************** VIP SYSTEM CONFIGURATION	*************************
+set $VIPs_SilverAccLevel,1;		// Account Level assigned for VIP Silver
+set $VIPs_GoldAccLevel,2;		// Account Level assigned for VIP Gold
+set $VIPs_PlatinumAccLevel,3;	// Account Level assigned for VIP Platinum
+set $VIPs_BronzeExpRate,50;		// VIP Bronze Exp Boost in % ( 1 = 1% )
+set $VIPs_SilverExpRate,100;	// VIP Silver Exp Boost in % ( 1 = 1% )
+set $VIPs_GoldExpRate,150;		// VIP Gold Exp Boost in % ( 1 = 1% )
+set $VIPs_CrystalExpRate,300;	// VIP Crystal Exp Boost in % ( 1 = 1% )
+set $VIPs_PlatinumExpRate,400;	// VIP Platinum Exp Boost in % ( 1 = 1% )
+set $VIPs_DiamondExpRate,500;	// VIP Diamiond Exp Boost in % ( 1 = 1% )
+set $VIPs_TitaniumExpRate,1000;	// VIP Titanium Exp Boost in % ( 1 = 1% )
+set $VIPs_BronzeItemRate,10;	// VIP Bronze Item Drop Boost in % ( 1 = 1% )
+set $VIPs_SilverItemRate,20;	// VIP Silver Item Drop Boost in % ( 1 = 1% )
+set $VIPs_GoldItemRate,30;		// VIP Gold Item Drop Boost in % ( 1 = 1% )
+set $VIPs_CrystalItemRate,60;	// VIP Crystal Item Drop Boost in % ( 1 = 1% )
+set $VIPs_PlatinumItemRate,105;	// VIP Platinum Item Drop Boost in % ( 1 = 1%)
+set $VIPs_DiamondItemRate,150;	// VIP Diamiond Item Drop Boost in % ( 1 = 1% )
+set $VIPs_TitaniumItemRate,300;	// VIP Titanium Item Drop Boost in % ( 1 = 1% )
+set $VIPs_AdminGmLevel,99;		// Define GM Level enabled to add, list and	*
+//.@account_id = (getcharid(3));// (Account ID) Cache for account id for SQL table
+//	********************************************************************
+	//Random Number
+	.@random = rand(1000);
+				
+				// First of all deACTIVEte all VIP benefits
+				sc_end SC_LIFEINSURANCE;
+				sc_end sc_expboost;	
+				sc_end SC_JEXPBOOST;
+				//	sc_end sc_itemboost;
+	
+			query_sql ("SELECT `status` FROM vip_db WHERE `account_id` = '"+(getcharid(3))+"';",.@vipStatus$); // Get VIP Status
+			query_sql ("SELECT DATE_FORMAT(`end_date`, '%Y %m %d') FROM vip_db WHERE `account_id` = '"+(getcharid(3))+"';",.@expirationDate$); // Get expiration date
+		if (gettimestr("%Y %m %d",21) >= .@expirationDate$) // If current date is higher than expiration date...
+		{
+			query_sql("UPDATE `vip_db` SET `status` = 'EXPIRED' WHERE `account_id` = "+(getcharid(3))+";"); // Set account type to "EXPIRED" in 'vip_bronze' table
+			goto L_displayInfo;			
+		}
+
+	if (.@accountType$ == "BRONZE"){
+			sc_start sc_expboost,1000*60*60*24,$VIPs_BronzeExpRate;
+			sc_start SC_JEXPBOOST,1000*60*60*24,$VIPs_BronzeExpRate;
+		  //sc_start sc_itemboost,1000*60*60*24,$VIPs_BronzeItemRate;
+
+		// Dialy Bonus
+        if(#dailytimer < gettimetick(2)) {
+            announce "Here's your prize, you'll get another one after 24 hours.",bc_self,0x0099FF;
+            getitem 12103,1; //Bloody branch
+			getitem 676,1; //Bronze coin = 10k
+			
+			if(.@random>=751 && .@random<= 800) getitem 7179,1;
+            set #dailytimer,gettimetick(2) + 86400; //24 hours.
+			goto L_displayInfo;
+		}
+	}
+
+	if (.@accountType$ == "SILVER"){
+			sc_start sc_expboost,1000*60*60*24,$VIPs_SilverExpRate;
+			sc_start SC_JEXPBOOST,1000*60*60*24,$VIPs_SilverExpRate;
+		  //sc_start sc_itemboost,1000*60*60*24,$VIPs_SilverItemRate;
+
+		// Dialy Bonus
+        if(#dailytimer < gettimetick(2)) {
+            announce "Here's your prize, you'll get another one after 24 hours.",bc_self,0x0099FF;
+            getitem 12103,1; //Bloody branch
+			getitem 672,4; //Silver coin = 10k
+			
+			if(.@random>=751 && .@random<= 800) getitem 7179,2;
+            set #dailytimer,gettimetick(2) + 86400; //24 hours.
+			goto L_displayInfo;
+		}
+	}
+
+	if (.@accountType$ == "GOLD"){
+			sc_start sc_expboost,1000*60*60*24,$VIPs_GoldExpRate;
+			sc_start SC_JEXPBOOST,1000*60*60*24,$VIPs_GoldExpRate;
+		  //sc_start sc_itemboost,1000*60*60*24,$VIPs_GoldItemRate;
+			
+		// Dialy Bonus
+        if(#dailytimer < gettimetick(2)) {
+            announce "Here's your prize, you'll get another one after 24 hours.",bc_self,0x0099FF;
+            getitem 12103,5; //Bloody branch
+			getitem 672,4; //Silver coin = 10k
+			
+			if(.@random>=751 && .@random<= 800) getitem 7179,4;
+            set #dailytimer,gettimetick(2) + 86400; //24 hours.
+			goto L_displayInfo;
+		}
+	}
+
+	if (.@accountType$ == "CRYSTAL"){
+			sc_start sc_expboost,1000*60*60*24,$VIPs_CrystalExpRate;
+			sc_start SC_JEXPBOOST,1000*60*60*24,$VIPs_CrystalExpRate;
+		  //sc_start sc_itemboost,1000*60*60*24,$VIPs_CrystalItemRate;
+			
+		// Dialy Bonus
+        if(#dailytimer < gettimetick(2)) {
+            announce "Here's your prize, you'll get another one after 24 hours.",bc_self,0x0099FF;
+            getitem 12103,7; //Bloody branch
+			getitem 672,4; //Silver coin = 10k
+			
+			if(.@random>=751 && .@random<= 800) getitem 7179,8;
+            set #dailytimer,gettimetick(2) + 86400; //24 hours.
+			goto L_displayInfo;
+		}
+	}
+
+	if (.@accountType$ == "PLATINUM"){
+			sc_start sc_expboost,1000*60*60*24,$VIPs_PlatinumExpRate;
+			sc_start SC_JEXPBOOST,1000*60*60*24,$VIPs_PlatinumExpRate;	
+		  //sc_start sc_itemboost,1000*60*60*24,$VIPs_PlatinumItemRate;
+			
+		// Dialy Bonus
+        if(#dailytimer < gettimetick(2)) {
+            announce "Here's your prize, you'll get another one after 24 hours.",bc_self,0x0099FF;
+            getitem 12103,9; //Bloody branch
+			getitem 672,4; //Silver coin = 10k
+			
+			if(.@random>=751 && .@random<= 800) getitem 7179,16;
+            set #dailytimer,gettimetick(2) + 86400; //24 hours.
+			goto L_displayInfo;
+		}
+	}
+
+	if (.@accountType$ == "DIAMOND"){
+			sc_start sc_expboost,1000*60*60*24,$VIPs_DiamondExpRate;
+			sc_start SC_JEXPBOOST,1000*60*60*24,$VIPs_DiamondExpRate;
+		  //sc_start sc_itemboost,1000*60*60*24,$VIPs_DiamondItemRate; 
+			
+		// Dialy Bonus
+        if(#dailytimer < gettimetick(2)) {
+            announce "Here's your prize, you'll get another one after 24 hours.",bc_self,0x0099FF;
+            getitem 12103,11; //Bloody branch
+			getitem 40626,10; //Gold coin = 100k
+			getitem 672,5; //Silver coin = 10k
+			
+			if(.@random>=751 && .@random<= 800) getitem 7179,32;
+            set #dailytimer,gettimetick(2) + 86400; //24 hours.
+			goto L_displayInfo;
+		}
+	}
+
+	if (.@accountType$ == "TITANIUM"){
+			sc_start sc_expboost,1000*60*60*24,$VIPs_TitaniumExpRate;
+			sc_start SC_JEXPBOOST,1000*60*60*24,$VIPs_TitaniumExpRate;
+		  //sc_start sc_itemboost,1000*60*60*24,$VIPs_TitaniumItemRate; 
+		  
+			// Dialy Bonus
+			if(#dailytimer < gettimetick(2)) {
+            announce "Here's your prize, you'll get another one after 24 hours.",bc_self,0x0099FF;
+            getitem 12103,15; //Bloody branch
+			getitem 40626,20; //bRO Gold coin = 100k
+			getitem 672,10; //Silver coin = 10k
+			
+			if(.@random>=751 && .@random<= 800) getitem 7179,64;
+            set #dailytimer,gettimetick(2) + 86400; //24 hours.
+		    goto L_displayInfo;			
+			}
+	
+	}
+	
+// Displays account type status on login on chat window.
+L_displayInfo:
+	dispbottom "----------------------------------------------------------------------";
+	dispbottom "         This VIP System V3.2 is Powerd by BesprenRO";
+	dispbottom "----------------------------------------------------------------------";
+	dispbottom "Account type:         "+.@accountType$;
+	dispbottom "Status:                   "+.@vipStatus$;
+	dispbottom "Expiration date:      "+.@expirationDate$;
+	if (gettimestr("%Y %m %d",21) < .@expirationDate$) 		// If current date is lower than expiration date...
+		{
+	dispbottom "Time till next daily reward: "+ ((#dailytimer - gettimetick(2)) / 3600) + " hour(s) OR "+ (#dailytimer - gettimetick(2)) + " second(s)";
+		}else{
+	dispbottom "Time till next daily reward: 00 hour(s) OR 00 second(s).";	
+		}
+	dispbottom "----------------------------------------------------------------------";
+	end;
+	
+// GM wispher Global Command start here
+OnWhisperGlobal:
+	if ( getgmlevel() < 99 ){ end;}
+
+MAIN_MENU:
+
+	$VIPs_Bronze = 250;			// Bronze = 250 php
+	$VIPs_Silver = 250;			// Silver = 250 php
+	$VIPs_Gold = 250;			// Gold = 250 php
+	$VIPs_Crystal = 500;		// Crystal = 500 php
+	$VIPs_Platinum = 500;		// Platinum = 500 php
+	$VIPs_Diamond= 500;			// Diamond = 500 php
+	$VIPs_Titanium = 750;		// Titanium = 750 php
+	.@npcName$ = "[^DF0101VIP System v3.2^000000]";
+	
+			mes .@npcName$;
+			mes "Welcome, Sir ^0000FF"+strcharinfo(0)+"^000000...";
+			mes "What can I do for you today?";
+			next;
+			
+	switch(select("~ Register & Updates:~ Delete Account:~ Accounts List:~ Quit")){
+		
+	case 1:	// Register & Updates
+					mes "Enter User Name:";
+				input .@accountName$;
+					next;
+				
+				//Fetch DB information
+				query_sql ("SELECT `account_id` FROM login WHERE `userid` = '"+.@accountName$+"';",.@accountId); // Get the account ID of the username input
+				query_sql ("SELECT `account_id`, `vip_id` FROM vip_db WHERE `user_id` = '"+.@accountName$+"';",.@acc_id,.@vip_id$); // Get user ID in VIP DB
+				
+					mes .@npcName$;
+					mes "Identifying User!";
+				sleep2 rand(100,2000); 								// Looks like it's working on something :P
+					mes "User: ^0000FF"+.@accountName$+"^000000.";	
+					mes "ID: ^0000FF"+.@accountId+"^000000.";
+
+				if (.@acc_id){									// Virification if the account is registered as VIP
+					mes "Status:^DF0101 Registered!^000000";
+					mes "VIP Type: ^DF0101"+.@vip_id$+"^000000";
+						if(select("~ Extend Plan:~Change Plan")==1){ .@xtend = 1; goto REG1; }
+					.@xPlan = 1;
+					}
+					
+				if (!.@accountId){ mes "Status:^DF0101 --- UserID not FOUND! ---^000000"; next; goto MAIN_MENU; }// Virification if the account is registered as VIP
+					
+					next;
+					mes .@npcName$;
+					mes "Select VIP Type:";
+					
+				switch(select("~Bronze "+$VIPs_Bronze+"Php:~Silver "+$VIPs_Silver+"Php:~Gold "+$VIPs_Gold+"Php:~Crystal "+$VIPs_Crystal+"Php:~Platinum "+$VIPs_Platinum+"Php:~Diamond "+$VIPs_Diamond+"Php:~Titanium "+$VIPs_Titanium+"Php")){
+					case 1:	.@vipType$ = "BRONZE"; goto REG1;
+					case 2:	.@vipType$ = "SILVER"; goto REG1;	
+					case 3:	.@vipType$ = "GOLD"; goto REG1;
+					case 4:	.@vipType$ = "CRYSTAL"; goto REG1;					
+					case 5:	.@vipType$ = "PLATINUM"; goto REG1;					
+					case 6:	.@vipType$ = "DIAMOND"; goto REG1;
+					case 7:	.@vipType$ = "TITANIUM"; goto REG1;
+					} // End of vip type menu
+				
+			REG1:
+					next;
+					mes .@npcName$;
+					mes "AccID: ^0000FF"+.@accountId+"^000000.";
+					mes "UserID: ^0000FF"+.@accountName$+"^000000.";
+					if(.@xtend){
+					mes "VIP Type: ^DF0101"+.@vip_id$+"^000000";}else{
+					mes "VIP Type: ^0000FF"+.@vipType$+"^000000."; }
+					
+				switch(select("~1 week:~2 weeks:~3 weeks:~4 weeks:~1 Month")){
+					case 1:	.@vipDay = 7; goto REG2;
+					case 2:	.@vipDay = 14; goto REG2;
+					case 3: .@vipDay = 21; goto REG2;
+					case 4: .@vipDay = 28; goto REG2;
+					case 5: .@vipDay = 30; goto REG2;
+					}// End of weeks menu
+					
+			REG2:
+				query_sql "SELECT `account_id` FROM vip_db WHERE `user_id` = '"+.@accountName$+"';",.@acc_id;
+				sleep2 rand(100,850);
+				if(!.@acc_id){
+							query_sql("INSERT INTO vip_db (`vip_id`,`account_id`,`user_id`,`start_date`,`end_date`,`status`) VALUES ('"+.@vipType$+"',"+.@accountId+",'"+.@accountName$+"','"+gettimestr("%Y-%m-%d",21)+"','"+gettimestr("%Y-%m-%d",21)+"','ACTIVE');");
+							.@message$ = "Registered";
+							}
+				sleep2 100;
+				
+				// Registration and additional Updates
+				if(!.@xPlan){ query_sql("UPDATE vip_db SET end_date = DATE_ADD(start_date, INTERVAL "+.@vipDay+" DAY) WHERE account_id = "+.@accountId+";");}
+				if(!.@xtend)&&(!.@xPlan){mes "Validity of: ^0000FF"+.@vipDay+"Days^000000";}
+				
+				// Extended Plan querry update
+				if(.@xtend){ query_sql("UPDATE vip_db SET  end_date = DATE_ADD(end_date, INTERVAL "+.@vipDay+" DAY) WHERE account_id = "+.@accountId+";");
+							 mes "Validity of: ^0000FF Additional "+.@vipDay+"Days^000000";
+							 .@message$ = "Update...";
+							 }
+				
+				// Change Plan querry update
+				if(.@xPlan){ query_sql("UPDATE `vip_db` SET `vip_id` = '"+.@vipType$+"' WHERE `account_id` = "+.@accountId+";");
+							 query_sql("UPDATE vip_db SET  end_date = DATE_ADD(end_date, INTERVAL "+.@vipDay+" DAY) WHERE account_id = "+.@accountId+";");
+							 mes "Validity of: ^0000FF"+.@vipDay+"Days^000000 + your previous balance if you have.";
+							.@message$ = "Change & Updates...";
+						   }
+						   
+							mes "^088A08 Successfuly "+.@message$+"! ^000000";
+							close;
+		
+			
+	case 2: // Delete VIP Account in the List
+					mes .@npcName$;
+					mes "Type the User Name Account ";
+					mes "you wish to delete in the List.";
+					
+				input .@accountName$;
+					next;
+				
+				//Fetch DB information
+				query_sql ("SELECT `status`,`account_id` FROM vip_db WHERE `user_id` = '"+.@accountName$+"';",.@status$,.@accountId);
+				
+					mes .@npcName$;
+					mes "Identifying User!";
+					mes "User Name: ^0000FF"+.@accountName$+"^000000";
+					mes "Acc ID: ^0000FF"+.@accountId+"^000000";
+				sleep2 rand(100,2000); 			// Looks like it's working on something :P
+				if (!.@accountId){ 				// Virification if the account is registered as VIP
+					mes "Status:^DF0101is not in the VIP List.^000000";
+					close;
+					}
+					
+				if (.@status$ != "EXPIRED"){	// Abort if the User Account is not yet expired
+					mes "Status:^088A08 VIP Plan not EXPIRED.^000000";
+						if(select("Cancel?:Continue...")==1){close;}
+					}
+					
+				sleep2 rand(100,850);
+					mes "^DF0101 Successfuly Deleted!^000000";
+					query_sql "DELETE FROM `vip_db` WHERE `account_id`='"+.@accountId+"'";	// Account deletion from the list
+					close;
+					
+	case 3: // VIP List
+	
+			// Gather information in mySql DB...
+			.@size = query_sql( "select user_id, vip_id, status from vip_db where id > 0 order by id", .@user_id$, .@vip_id$, .@status$ );
+			
+			if (!.@size){ // Verify if the list is empty
+				mes .@npcName$;
+				mes "Our Data Base list are empty.";
+				close;}
+
+				// Window List of NPC
+				mes .@npcName$;
+				mes "No. ^088A29 User Name^000000 ^0404B4 VIP Type ^000000 ^FF0000 Status ^000000 ";
+			for(set .@i, 0; .@i < .@size; set .@i, .@i + 1){
+				mes ""+(.@i+1)+". ^088A29"+.@user_id$[.@i]+"^000000 ^0404B4"+.@vip_id$[.@i]+"^000000 ^FF0000"+.@status$[.@i]+"^000000";}
+				close;
+				
+					
+	case 4: close;	// Quit
+	}
+close;
+}
+
+
+-	script	vip_command	-1,{	
+
+OnInit:
+    bindatcmd "buff", strnpcinfo(0)+"::Onbuff";
+	bindatcmd "afk", strnpcinfo(0)+"::Onafk";
+	bindatcmd "homevolve", strnpcinfo(0)+"::Onhomevo";
+    end;
+	
+Onbuff:
+		set .@account_id,(getcharid(3));
+		set .@char_id, getcharid(0);
+		//query_sql("SELECT `lvl` FROM `login` WHERE account_id="+.@account_id+" LIMIT 1",.@acctype);
+		query_sql("SELECT `status` FROM `vip_db` WHERE account_id="+.@account_id+";",.@status$);
+
+		
+	//	if ( !getgmlevel() ) end; // only usable by super players
+    if ( getmapflag( strcharinfo(3), mf_pvp ) || getmapflag( strcharinfo(3), mf_gvg ) || getmapflag( strcharinfo(3), mf_battleground ) || getmapflag( strcharinfo(3), mf_nowarpto ) ) {
+        dispbottom "[VIP Service] This command is not available in this map";
+        end;
+    }
+    if (.@status$ != "ACTIVE") {
+        dispbottom "[VIP Service] You don't registered as VIP Account to receive this service";
+        end;
+    }
+    if ( vip_buff_service + 10800 > gettimetick(2) ) {
+        dispbottom "[VIP Service] This Heal-Buff service is only available every 3 hours";
+        end;
+    }
+	sc_start SC_BLESSING,360000,5;
+	sc_start SC_INCREASEAGI,360000,5;
+	percentheal 100,100;
+	skilleffect 34,0;
+    dispbottom "[VIP Service] You have just activated a buffing service";
+    vip_buff_service = gettimetick(2);
+    end;
+
+//============================ AFK ========================//	
+Onafk:
+		set .@account_id,(getcharid(3));
+		set .@char_id, getcharid(0);
+		query_sql("SELECT `lvl` FROM `login` WHERE account_id="+.@account_id+" LIMIT 1",.@acctype);
+		set .@Abc,.@acctype;
+		
+	if ( !getgmlevel() ) end; // only usable by super players
+    if ( getmapflag( strcharinfo(3), mf_pvp ) || getmapflag( strcharinfo(3), mf_gvg ) || getmapflag( strcharinfo(3), mf_battleground ) || getmapflag( strcharinfo(3), mf_nowarpto ) ) {
+        dispbottom "[VIP Service] This command is not available in this map";
+       end;
+    }
+    if ( 0==.@Abc ) {
+        dispbottom "[VIP Service] You don't registered as VIP Account to receive this service";
+        end;
+    }
+	dispbottom "[VIP Service] You have just activated a AFK service";
+	atcommand "@afk " + .@atcmd_parameters$[0];
+   end;
+//========================================================================//
+
+Onhomevo:
+		set .@account_id,(getcharid(3));
+		set .@char_id, getcharid(0);
+		query_sql("SELECT `lvl` FROM `login` WHERE account_id="+.@account_id+" LIMIT 1",.@acctype);
+		set .@Abc,.@acctype;
+		
+//	if ( !getgmlevel() ) end; // only usable by super players
+    if ( getmapflag( strcharinfo(3), mf_pvp ) || getmapflag( strcharinfo(3), mf_gvg ) || getmapflag( strcharinfo(3), mf_battleground ) || getmapflag( strcharinfo(3), mf_nowarpto ) ) {
+        dispbottom "[VIP Service] This command is not available in this map";
+        end;
+    }
+    if ( 0==.@Abc ) {
+        dispbottom "[VIP Service] You don't registered as VIP Account to receive this service";
+        end;
+    }
+	dispbottom "[VIP Service] You have just activated a Homuculous Evolve service";
+	atcommand "@homevolve " + .@atcmd_parameters$[0];
+
+    end;
+}
+
+
+
+
+
+
+
+/*
+-- Table structure for table `vip_db`
+--
+-- DROP TABLE IF EXISTS `vip_db`;
+CREATE TABLE `vip_db` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `vip_id` enum('BRONZE','SILVER','GOLD','CRYSTAL','PLATINUM','DIAMOND','TITANIUM') NOT NULL,
+  `account_id` int(7) unsigned NOT NULL,
+  `user_id` varchar(45) NOT NULL,
+  `start_date` date NOT NULL,
+  `end_date` date NOT NULL,
+  `status` enum('ACTIVE','EXPIRED') NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=6 DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;
+
+*/
