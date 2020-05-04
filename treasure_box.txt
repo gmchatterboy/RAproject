@@ -1,0 +1,93 @@
+//===== rAthena Script ======================================= 
+//= Treasure box
+//===== By: ================================================== 
+//= Chatterboy
+//===== Current Version: ===================================== 
+//= 1.0
+//===== Compatible With: ===================================== 
+//= rAthena Project
+//////////////////////////////////////////////////////////////
+
+prontera,146,234,6	script	T-Box	1324,{
+		mes "[ Treasure Box ]";
+	if (.Status==0){
+		mes "There is no event at the moment!";}
+	else {
+		mes "The "+.Spawn+" treasure box is in "+.Map$+"!";
+		mes "Find it to gain random prize!";
+	}
+	if (.Status || getgmlevel() < .GM){close;}
+		mes "Start the event?";
+	
+	next;
+	if(select("- Yes:- No") == 2){close;}
+		donpcevent strnpcinfo(0)+"::OnMinute30";
+		mes "[ Treasure Box ]";
+		mes "Event started!";
+		close;
+		
+OnInit:
+	set .GM,60;	// GM level required to access NPC
+	setarray .Maps$[0],"mjolnir_05","gef_fild06","pay_fild04"; // Possible maps
+	end;
+
+OnMinute30:	// Start time (every 3 hour)
+			set .@rand,rand(1,20);
+			
+	if(.@rand==9){
+			if (.Status==1){end;};
+			set .Status,1;
+			set .Spawn,1;	// How many mob should spawn?
+			set .Map$,.Maps$[rand(getarraysize(.Maps$))];
+			killmonster .Map$,"All";
+			monster .Map$,0,0,"Treasure Box",1798,.Spawn,strnpcinfo(0)+"::OnMobKilled1";
+			announce "Find the treasure box it has been spawned in "+.Map$+"!",0;
+			sleep 2500;
+			announce "Find the treasure box after you break will give you a random Prize!",0;
+			end;
+
+		OnMobKilled1:
+			set .Spawn,1;
+			callfunc "tbox";
+			if (.Spawn==1){ announce "[ "+strcharinfo(0)+" ] has break the treasure box.",0;}
+				sleep2 rand(10,2000);
+				announce "The treasure box Event has ended. it will respawn again in random Time.",0;
+				set .Status,0;
+				end;}
+
+		end;
+			
+}
+
+function	script	tbox	{
+	
+		.@item_id = F_Rand( 969,25142,20234,20178,12041,12046,12051,12056,12061,40613,14232,12710,2407,14232,12710,14232,2526,12710 );
+		getitem .@item_id,1;
+return;
+}
+
+/* ------------------------- OLD Script -------------------------
+.@randprize = rand(1,20);
+						if (.@randprize == 1) {getitem 969,2;} //Gold Coin
+					else if (.@randprize == 2) {getitem 25142,2;} //Doram Coin
+					else if (.@randprize == 3) { getitem 20234,1;} //Costume Baphomet Hat
+					else if (.@randprize == 4) {getitem 20178,1;} //Costume Puppy Love
+					else if (.@randprize == 5) {getitem 12041,10;} //Fried Grasshopper Legs
+					else if (.@randprize == 6) {getitem 12046,10;} //Grape Juice Herbal Tea
+					else if (.@randprize == 7) {getitem 12051,10;} //Steamed Crab Nippers
+					else if (.@randprize == 8) {getitem 12056,10;} //Frog Egg Squid Ink Soup
+					else if (.@randprize == 9) {getitem 12061,10;} //Honey Grape Juice
+					else if (.@randprize == 10) {getitem 40613,1;} //Punksutawney Box
+					else if (.@randprize == 11) {getitem 14232,10;} //Yggdrasil Berry 10 Box
+					else if (.@randprize == 12) {getitem 12710,10;} //Guyak Pudding
+					else if (.@randprize == 13) {getitem 2407,1;} //Crystal Pumps
+					else if (.@randprize == 14) {getitem 14232,10;} //Yggdrasil Berry 10 Box
+					else if (.@randprize == 15) {getitem 14232,10;} //Yggdrasil Berry 10 Box
+					else if (.@randprize == 16) {getitem 12710,10;} //Guyak Pudding
+					else if (.@randprize == 17) {getitem 14232,10;} //Yggdrasil Berry 10 Box
+					else if (.@randprize == 18) {getitem 2526,1;} //Coat of Dragon Scale
+					else if (.@randprize == 19) {getitem 14232,10;} //Yggdrasil Berry 10 Box
+					else if (.@randprize == 20) {getitem 12710,10;} //Guyak Pudding
+
+return;
+*/
