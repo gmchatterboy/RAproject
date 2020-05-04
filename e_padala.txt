@@ -1,0 +1,512 @@
+/*
+
+*getinventorylist;
+
+This command sets a bunch of arrays with a complete list of whatever the
+invoking character has in their inventory, including all the data needed to
+recreate these items perfectly if they are destroyed. Here's what you get:
+
+@inventorylist_id[] - array of item ids.
+@inventorylist_amount[] - their corresponding item amounts.
+@inventorylist_equip[] - whether the item is equipped or not.
+@inventorylist_refine[] - for how much it is refined.
+@inventorylist_identify[] - whether it is identified.
+@inventorylist_attribute[] - whether it is broken.
+@inventorylist_card1[] - These four arrays contain card data for the items.
+@inventorylist_card2[] These data slots are also used to store names
+@inventorylist_card3[] inscribed on the items, so you can explicitly check
+@inventorylist_card4[] if the character owns an item made by a specific
+craftsman.
+@inventorylist_expire[] - expire time (Unix time stamp). 0 means never expires.
+@inventorylist_bound[] - whether it is bound to the character
+@inventorylist_count - the number of items in these lists.
+*/
+
+//----------------------------------------------------//
+// BRO - Express
+// Script by: Chatterboy
+// Emulator: rAthena
+//----------------------------------------------------//
+//prontera,123,198,0	script	Delivery	504,{
+-	script	Ybba	-1,{
+
+OnWhisperGlobal:
+
+	setarray .MapList$[0],"onevsone","lms_room"; // Map List
+	
+	.@map_size = getarraysize( .MapList$ );
+	for( .@i = 0; .@i < .@map_size; .@i++ )
+	if( strcharinfo(3) == .MapList$[@i]){ message strcharinfo(0), "Notice: @senditem is off in this area."; end;}
+
+.@npc$ = "[Ybba]";
+.@gmlevel = getgmlevel();
+CLAIM:	
+
+	mes .@npc$;
+	mes "^08088AExpress Delivery Service^000000";
+	next;
+	
+	switch(select("~ Claim Delivery:~ Express Padala:~ Check my delivery",( .@gmlevel < .gm_level )?"":"~ ^FF0000[GM]^000000Menu")) { 
+
+case 1:// Claim
+	mes .@npc$;
+	mes "Hello! please enter the delivery code:";
+	next;
+	
+		while( input( @dcode, 1111, 9999999 ) != 0 ) {
+				mes .@npc$;
+				mes "--- ^DF013AERROR 404^000000 ---";
+				mes " Please enter PIN not less than 4 digit upto maximum of 7 digit.";
+				soundeffect "error_pin.wav",0;
+				emotion ET_x;
+				close;}
+				
+			// Fetch data in MySQL Database
+			.@acc_id = getcharid(3);
+			query_sql "SELECT `recepient_id`,`recepient_name`,`dcode`,`item`,`refine`,`card0`,`card1`,`card2`,`card3`,`qty`,`type`,`day`,`sender`,`sender_name` FROM delivery WHERE `dcode` = '"+@dcode+"';",.@acc,.@acc_name$,.@pin,.@item,.@refine,.@card0,.@card1,.@card2,.@card3,.@qty,.@type,.@day,.@sender,.@sender_name$;
+			
+		if (!getarraysize(.@acc)){ // Verify if the Account is excist
+				mes .@npc$;
+				mes "--- ^DF013AERROR 404^000000 ---";
+				mes "Account ID does not excist please try again...";
+				soundeffect "error_pin.wav",0;
+				emotion ET_x;
+				close;
+				}
+
+		if(.@acc == .@acc_id)&& (.@pin == @dcode){ // Verify the account ID and PIN is match
+
+					mes "---[^DF013A BRO - EXPRESS Delivery ^000000]---";
+					mes "From: ^08088A"+.@sender_name$+"^000000 ";
+					mes "Delivery Code: ^08088A"+.@pin+"^000000";
+					sleep2 rand(5,2000); // Its like on progress ^_^
+					mes "Item: ^08088A"+getitemname(.@item)+"^000000";
+				if(.@refine >=1){mes "Refine: ^0000FF+"+.@refine+"^000000";}
+				if(.@card0 >=1){mes "Card Slot 1: ^0000FF"+getitemname(.@card0)+"^000000";}
+				if(.@card1 >=1){mes "Card Slot 2: ^0000FF"+getitemname(.@card1)+"^000000";}
+				if(.@card2 >=1){mes "Card Slot 3: ^0000FF"+getitemname(.@card2)+"^000000";}
+				if(.@card3 >=1){mes "Card Slot 4: ^0000FF"+getitemname(.@card3)+"^000000";}
+					mes "Qty: ^08088A"+.@qty+"x^000000 ";
+				if(.@day >= 1){mes "Duration: ^08088A"+.@day+" Day(s) Only^000000";}
+				if(.@type == 1){mes "Type:^08088A Normal ^000000 ";}
+				if(.@type == 2){mes "Type:^08088A Account Bound ^000000 ";}
+				if(.@type == 3){mes "Type:^08088A Rental ^000000 ";}
+
+				//* getitem2 <item id>,<amount>,<identify>,<refine>,<attribute>,<card1>,<card2>,<card3>,<card4>{,<Account ID>};
+				
+				//Get the delivery
+				if(.@type==1 && .@refine == 0 && .@card0 == 0 && .@card1 == 0 && .@card2 == 0 && .@card3 == 0){ //Normal
+					getitem .@item,.@qty;
+					query_sql "INSERT INTO `delivery_log` (`recepient_id`,`recepient_name`,`item`,`refine`,`card0`,`card1`,`card2`,`card3`,`qty`,`type`,`day`,`sender`,`sender_name`) VALUES ("+.@acc+",'"+.@acc_name$+"',"+.@item+","+.@refine+","+.@card0+","+.@card1+","+.@card2+","+.@card3+","+.@qty+","+.@type+","+.@day+","+.@sender+",'"+.@sender_name$+"')",@delivery$; 
+					query_sql "DELETE FROM `delivery` WHERE `dcode`='"+@dcode+"'";
+					specialeffect2 39;
+					close;}
+					
+				if(.@type==1 || .@refine >= 1 || .@card0 >= 1 || .@card1 >= 1 || .@card2 >= 1 || .@card3 >= 1){
+					getitem2 .@item,.@qty,1,.@refine,0,.@card0,.@card1,.@card2,.@card3;
+					query_sql "INSERT INTO `delivery_log` (`recepient_id`,`recepient_name`,`item`,`refine`,`card0`,`card1`,`card2`,`card3`,`qty`,`type`,`day`,`sender`,`sender_name`) VALUES ("+.@acc+",'"+.@acc_name$+"',"+.@item+","+.@refine+","+.@card0+","+.@card1+","+.@card2+","+.@card3+","+.@qty+","+.@type+","+.@day+","+.@sender+",'"+.@sender_name$+"')",@delivery$;
+					query_sql "DELETE FROM `delivery` WHERE `dcode`='"+@dcode+"'";
+					specialeffect2 39;
+					close;}
+					
+				if(.@type==2){ //Account Bound Item
+					getitembound .@item,.@qty,Bound_Account;
+					query_sql "INSERT INTO `delivery_log` (`recepient_id`,`recepient_name`,`item`,`refine`,`card0`,`card1`,`card2`,`card3`,`qty`,`type`,`day`,`sender`,`sender_name`) VALUES ("+.@acc+",'"+.@acc_name$+"',"+.@item+","+.@refine+","+.@card0+","+.@card1+","+.@card2+","+.@card3+","+.@qty+","+.@type+","+.@day+","+.@sender+",'"+.@sender_name$+"')",@delivery$;
+					query_sql "DELETE FROM `delivery` WHERE `dcode`='"+@dcode+"'";
+					specialeffect2 39;
+					close;}
+					
+				if(.@type==3){ //Rental item
+					@time = 1400*.@day; // 1400 = 1day
+					rentitem .@item,@time;
+					query_sql "INSERT INTO `delivery_log` (`recepient_id`,`recepient_name`,`item`,`refine`,`card0`,`card1`,`card2`,`card3`,`qty`,`type`,`day`,`sender`,`sender_name`) VALUES ("+.@acc+",'"+.@acc_name$+"',"+.@item+","+.@refine+","+.@card0+","+.@card1+","+.@card2+","+.@card3+","+.@qty+","+.@type+","+.@day+","+.@sender+",'"+.@sender_name$+"')",@delivery$;
+					query_sql "DELETE FROM `delivery` WHERE `dcode`='"+@dcode+"'";
+					specialeffect2 39;
+					close;}
+				else{ mes .@npc$; mes ".."; close;}
+			}
+				
+					mes .@npc$;
+					mes "Delivery Code is not EXIST...";
+					soundeffect "error_pin.wav",0;
+					emotion ET_x;
+					close;
+				
+
+case 2: //Express Padala
+	mes .@npc$;
+	mes "Hello! ^0000FFWe can deliver your Item^000000";
+	mes "Delivery Charge: ^08088A1,000z^000000";
+	next;
+	
+	if(select("Yes!:No..")==1){
+	
+		set .@gen_code,rand(10000,99999); // Account ID Generator
+	
+			if(Zeny<100){ // Lessthan 100z is not allowed to open account
+				mes .@npc$;
+				mes "You dont have enough Zeny make sure you have 100z or more for initial deposit...";
+				soundeffect "error_pin.wav",0;
+				emotion ET_x;
+				close;}
+				
+			query_sql "SELECT `dcode` FROM delivery WHERE `dcode` = "+.@gen_code+";",.@dcode;	
+			if (.@dcode == 0){// verify if there is existing account number in database for double entry code
+	
+					//Enter Name of recipient
+					mes .@npc$;
+					mes "Name of Recepient:";
+
+					input .@charName$;
+					next;
+
+			//Gather data you entered to mySql database for verification
+			//query_sql "SELECT `account_id` FROM `char` WHERE `name` = '"+ escape_sql(.@charName$) +"'", .@acc_id$ ;
+			//query_sql "SELECT `account_id` FROM char WHERE `name` = "+.@charName$+";",.@acc_id$;
+			if(query_sql("SELECT `account_id` FROM `char` WHERE `name` = '"+.@charName$+"'",.@acc_id) == 0) { //Verify if the Player exist.
+					mes .@npc$;
+					mes "Identifying Player: ^0000FF"+.@charName$+"^000000.";
+					mes "^DF0101ERROR^000000: I can't found this Player.";
+					mes "Please re-enter the correct name/spelling";
+			close;}
+			
+					mes .@npc$;
+					mes "Recipient: ^0000FF"+.@charName$+"^000000";
+					mes "Select the Item you wish to send:";
+					next;
+//------------------------------------------------------------------------------//
+//Functions	Menu Gather Inventory List
+			
+			getinventorylist;
+			while ( .@i < @inventorylist_count && getiteminfo( @inventorylist_id[ .@i ] ,5 ) != 32 && getiteminfo( @inventorylist_id[ .@i ] ,5 ) != 2 ) .@i++;
+			for(set .@i, 0; .@i < getarraysize(@inventorylist_id); set .@i, .@i + 1){	
+			set .@NameMenu$,.@NameMenu$ +getitemname(@inventorylist_id[.@i])+":";}
+			set .@invitem,select( .@NameMenu$ ) - 1;
+//------------------------------------------------------------------------------//
+
+			if ( @inventorylist_bound[.@invitem] ){ // Check if the item is Account Bound
+				mes .@npc$;
+				mes "Recipient: ^0000FF"+.@charName$+"^000000";
+				mes "Item : ^0000FF"+getitemname(@inventorylist_id[.@invitem])+"^000000";
+				mes "Im Sorry this item is prohibeted to send";
+				deletearray @inventorylist_id, .@invitem;
+				close;}
+	
+			if ( @inventorylist_expire[.@invitem] ){ // Check if the item is Rent Item
+				mes .@npc$;
+				mes "Recipient: ^0000FF"+.@charName$+"^000000";
+				mes "Item : ^0000FF"+getitemname(@inventorylist_id[.@invitem])+"^000000";
+				mes "Im Sorry this item is prohibeted to send";
+				deletearray @inventorylist_id, .@invitem;
+				close;}
+
+			// Prohebited Items
+			setarray .@items[0],9001,9002,9003,9004,9005,9006,9007,9008,9009,9010,9011,9012,
+								9013,9014,9015,9016,9017,9018,9019,9020,9021,9022,9023,9024,
+								9025,9026,027,9028,9029,9030,9031,9032,9033,9034,9035,9036,9037,
+								9038,9039,9040,9041,9042,9043,9044,9045,9046,9047,9048,9049,9050,
+								9051,9052,9053,9054,9055,9056,9057,9058,9059,9060,9061,9062,9068,
+								9069,9070,9071,9087,2199,1599,1546,2541,2383,2629,1530,7179;
+								
+			.@item_size = getarraysize( .@items );
+			for( .@i = 0; .@i < .@item_size; .@i++ ){
+			if ( @inventorylist_id[.@invitem] == .@items[.@i]){ // Check if the item is Prohebited
+				mes .@npc$;
+				mes "Recipient: ^0000FF"+.@charName$+"^000000";
+				mes "Item : ^0000FF"+getitemname(@inventorylist_id[.@invitem])+"^000000";
+				mes "Im Sorry this item is prohibeted to send";
+				deletearray @inventorylist_id, .@invitem;
+				close;}
+				}
+
+			//Save Status of the item
+			@refine = @inventorylist_refine[.@invitem]; // Refine Count
+			@card0 = @inventorylist_card1[.@invitem];   // Card slot 1 get inserted item
+			@card1 = @inventorylist_card2[.@invitem];   // Card slot 2 get inserted item
+			@card2 = @inventorylist_card3[.@invitem];   // Card slot 3 get inserted item
+			@card3 = @inventorylist_card4[.@invitem];   // Card slot 4 get inserted item
+				
+				// Verification Preview
+				mes .@npc$;
+				mes "Recipient: ^0000FF"+.@charName$+"^000000";
+				mes "Item : ^0000FF"+getitemname(@inventorylist_id[.@invitem])+"^000000";
+				if(@refine >=1){mes "Refine: ^0000FF+"+@refine+"^000000";}
+				if(@card0 >=1){mes "Card Slot 1: ^0000FF"+getitemname(@card0)+"^000000";}
+				if(@card1 >=1){mes "Card Slot 2: ^0000FF"+getitemname(@card1)+"^000000";}
+				if(@card2 >=1){mes "Card Slot 3: ^0000FF"+getitemname(@card2)+"^000000";}
+				if(@card3 >=1){mes "Card Slot 4: ^0000FF"+getitemname(@card3)+"^000000";}
+				
+				mes "Enter quantity you will send:";
+				next;
+				
+				while( input( @qty, 1, 999 ) != 0 ) {
+				mes .@npc$;
+				mes "--- ^DF013AERROR 404^000000 ---";
+				mes " Please enter not less than 1 upto 999 Qty.";
+				soundeffect "error_pin.wav",0;
+				emotion ET_x;
+				deletearray @inventorylist_id, .@invitem;
+				close;}	
+				
+			.@item = @inventorylist_id[.@invitem];
+			@type = 1; // Normal Type of delivery
+			@day = 0;
+			
+			if(countitem(.@item) < @qty){ //Verification of total qty in the inventory
+				mes .@npc$;
+				mes "Please enter only what you have...";
+				deletearray @inventorylist_id, .@invitem;
+				emotion ET_pif;
+				close;}
+			
+
+// GM Access Option ----------------------------------------------------------//
+			if(getgmlevel() >=4){// From Event GM only can access
+				mes .@npc$;
+				mes "Recipient: ^0000FF"+.@charName$+"^000000";
+				mes "Item : ^0000FF"+getitemname(@inventorylist_id[.@invitem])+"^000000";
+				mes "Qty: ^0000FF"+@qty+"^000000";
+				if(@refine >=1){mes "Refine: ^0000FF+"+@refine+"^000000";}
+				if(@card0 >=1){mes "Card Slot 1: ^0000FF"+getitemname(@card0)+"^000000";}
+				if(@card1 >=1){mes "Card Slot 2: ^0000FF"+getitemname(@card1)+"^000000";}
+				if(@card2 >=1){mes "Card Slot 3: ^0000FF"+getitemname(@card2)+"^000000";}
+				if(@card3 >=1){mes "Card Slot 4: ^0000FF"+getitemname(@card3)+"^000000";}
+				next;
+				
+			if(select("~ Normal Delivery:~ Special Delivery")==2){
+			
+			
+			if(@refine >= 1 || @card0 >= 1 || @card1 >= 1 || @card2 >= 1 || @card3 >= 1){
+				mes .@npc$;
+				mes "Im Sorry BOSS! its not possible to do this. We can send item without Up's or Cards by NORMAL TYPE ONLY!";
+				emotion ET_shy;
+				deletearray @inventorylist_id, .@invitem;
+				close;}
+			
+						mes .@npc$;
+						mes "Recipient: ^0000FF"+.@charName$+"^000000";
+						mes "Item : ^0000FF"+getitemname(@inventorylist_id[.@invitem])+"^000000";
+						mes "Qty: ^0000FF"+@qty+"^000000";
+						mes "Select Type of item:";
+						next;
+						
+				switch(select("~ Account Bound:~ Rental")){
+				
+				case 1: @type = 2; next; goto PASS;
+				
+				case 2: @type = 3;
+						mes .@npc$;
+						mes "Recipient: ^0000FF"+.@charName$+"^000000";
+						mes "Item : ^0000FF"+getitemname(@inventorylist_id[.@invitem])+"^000000";
+						mes "Qty: ^0000FF"+@qty+"^000000";
+						mes "Type:^08088A RENTAL ^000000";
+						mes "Enter how many Day(s) Duration:";
+						next;
+				
+				while( input( @day, 1, 30 ) != 0 ) { // Duration of rental
+						mes .@npc$;
+						mes "--- ^DF013AERROR 404^000000 ---";
+						mes " Please enter not less than 1 upto 30 Days.";
+						emotion ET_x;
+						deletearray @inventorylist_id, .@invitem;
+						close;}	
+					}//End Item Type
+
+				}// End Delivery type
+				
+			}//END GM OPTION
+
+			
+PASS:
+				// Verification Preview
+				mes .@npc$;
+				mes "Delivery Code: ^0000FF"+.@gen_code+"^000000 ";
+				mes "Recepient: ^0000FF"+.@charName$+"^000000";
+				mes "Item: ^0000FF"+getitemname(@inventorylist_id[.@invitem])+"^000000";
+				if(@refine >=1){mes "Refine: ^0000FF+"+@refine+"^000000";}
+				if(@card0 >=1){mes "Card Slot 1: ^0000FF"+getitemname(@card0)+"^000000";}
+				if(@card1 >=1){mes "Card Slot 2: ^0000FF"+getitemname(@card1)+"^000000";}
+				if(@card2 >=1){mes "Card Slot 3: ^0000FF"+getitemname(@card2)+"^000000";}
+				if(@card3 >=1){mes "Card Slot 4: ^0000FF"+getitemname(@card3)+"^000000";}
+				mes "Qty: ^0000FF"+@qty+"^000000";
+				if(@day >= 1){mes "Duration: ^0000FF"+@day+"^000000";}
+				if(@type == 1){mes "Type:^08088A NORMAL ^000000";}
+				if(@type == 2){mes "Type:^08088A ACCOUNT BOUND ^000000";}
+				if(@type == 3){mes "Type:^08088A RENTAL ^000000";}
+				
+				if(select("Continue?:Cancel Process")==2){ deletearray @inventorylist_id, .@invitem; close;}
+				
+				set .@sndr$,strcharinfo(0); //Attach the Package SENDER
+				
+				sleep2 rand(5,2000); // Its like on progress ^_^
+				mes "--- ^04B431Transaction successful!^000000 ---";
+				delitem .@item,@qty;
+				Zeny -= 1000; //Payment
+				query_sql "INSERT INTO `delivery` (`recepient_id`,`recepient_name`,`dcode`,`item`,`refine`,`card0`,`card1`,`card2`,`card3`,`qty`,`type`,`day`,`sender`,`sender_name`) VALUES ("+.@acc_id+",'"+.@charName$+"',"+.@gen_code+","+@inventorylist_id[.@invitem]+","+@refine+","+@card0+","+@card1+","+@card2+","+@card3+","+@qty+","+@type+","+@day+",'"+getcharid(0)+"','"+.@sndr$+"')",@delivery$; 
+				soundeffect "deposit.wav",0;
+				emotion ET_ic;
+				deletearray @inventorylist_id, .@invitem;
+				specialeffect2 18;
+				close;}
+				
+				mes .@npc$;
+				mes "Please Try again after a few minutes to register, ill check first the available ID for you...";
+				emotion ET_x;
+				deletearray @inventorylist_id, .@invitem;
+				close;
+				
+				}
+				mes .@npc$;
+				mes "See you arround Travellers!";
+				emotion ET_ok;
+				close;
+				
+	case 3: //Check Delivery
+	
+		query_sql("SELECT `recepient_id`,`dcode`,`sender` FROM `delivery` WHERE recepient_id="+getcharid(3)+" LIMIT 10",.@accntid,.@dcode,.@sender);
+		if (!getarraysize(.@accntid)){ // Verify if the Account is excist
+			mes .@npc$;
+			mes "Sorry you dont have Delivery...";
+			emotion ET_shy; close; }
+  
+  		query_sql "SELECT `recepient_name` FROM delivery WHERE `recepient_id` = '"+getcharid(3)+"';",.@userid$;
+		query_sql("SELECT `name` FROM `char` WHERE `char_id` = '"+ escape_sql( .@sender ) +"'", .@sndr$ );
+			mes .@npc$;
+			mes "Sender: ^0000FF"+.@sndr$+"^000000";
+			mes "Recipient: ^0000FF"+.@userid$+"^000000";
+			mes "Delivery list:";
+			mes "^B40404#^000000 ^0000FF Delivery Code^000000";
+		for(set .@i, 0; .@i < getarraysize(.@accntid); set .@i, .@i + 1){mes "^B40404["+(.@i+1)+"]^000000 ^0000FF"+.@dcode[.@i]+"^000000";}
+			next;
+			goto CLAIM; end;
+			
+			
+	case 4: //Admin Menu
+	
+		mes .@npc$;
+		mes "Please Select Services:";
+		next;
+		
+		switch(select("~ Check Package list:~ Check Logs:~ Clear DB Logs")){
+		
+		case 1: //Check Mail
+			//query_sql "SELECT `recepient_id`,`item`,`refine`,`card0`,`card1`,`card2`,`card3`,`qty`,`type`,`day`,`sender` FROM delivery_log ORDER BY `sender` ASC LIMIT 50",.@acc,.@pin,.@item,.@refine,.@card0,.@card1,.@card2,.@card3,.@qty,.@type,.@day,.@sender;
+			query_sql "SELECT `recepient_id`,`recepient_name`, `item`, `qty`, `sender`, `sender_name` FROM `delivery` ORDER BY `sender` DESC",.@recepient_id,.@recepient_name$,.@item,.@qty,.@sender,.@sender_name$;
+			//query_sql("SELECT `name` FROM `char` WHERE `char_id` = '"+ escape_sql( .@sender ) +"'", .@sndr$ );	
+			dispbottom "-----------------------------------------------------------";
+			dispbottom "------------------ Un-Claimed Delivery --------------------";
+			dispbottom "No --- Reciever --- Item ID --- Qty --- Sender ";
+			dispbottom "-----------------------------------------------------------";
+			for(set .@i, 0; .@i < getarraysize(.@recepient_name$); set .@i, .@i + 1){
+			dispbottom "["+(.@i+1)+"] --- "+.@recepient_name$[.@i]+" --- "+getitemname(.@item[.@i])+" --- "+.@qty[.@i]+"x --- "+.@sender_name$[.@i]+" ";
+			}
+			close;
+			
+		case 2: //Check Logs
+			//query_sql "SELECT `recepient_id`,`item`,`refine`,`card0`,`card1`,`card2`,`card3`,`qty`,`type`,`day`,`sender` FROM delivery_log ORDER BY `sender` ASC LIMIT 50",.@acc,.@pin,.@item,.@refine,.@card0,.@card1,.@card2,.@card3,.@qty,.@type,.@day,.@sender;
+			query_sql "SELECT `recepient_id`,`recepient_name`, `item`, `qty`, `sender`, `sender_name` FROM `delivery_log` ORDER BY `sender` DESC",.@recepient_id,.@recepient_name$,.@item,.@qty,.@sender,.@sender_name$;
+			//query_sql("SELECT `name` FROM `char` WHERE `char_id` = '"+ escape_sql( .@sender ) +"'", .@sndr$ );	
+			
+			dispbottom "-----------------------------------------------------------";
+			dispbottom "------------------- Claimed Delivery ----------------------";
+			dispbottom "No --- Reciever --- Item ID --- Qty --- Sender ";
+			dispbottom "-----------------------------------------------------------";
+			for(set .@i, 0; .@i < getarraysize(.@recepient_name$); set .@i, .@i + 1){
+			dispbottom "["+(.@i+1)+"] --- "+.@recepient_name$[.@i]+" --- "+getitemname(.@item[.@i])+" --- "+.@qty[.@i]+"x --- "+.@sender_name$[.@i]+" ";
+			}
+			close;			
+			
+			
+		case 3: //Clear Log
+			mes .@npc$;
+			mes "Clear Delivery Log will permanent gone, Are you sure?";
+			next;
+			
+			if(.@gmlevel < 99){
+			mes .@npc$;
+			mes "Admin have the authorize to clear the logs.";
+			emotion ET_ok;
+			close;			
+			}
+			
+			if(select("YES!:NO!")==1){
+			mes .@npc$;
+			mes "Clear Delivery Log Successfuly!";
+			query_sql "	TRUNCATE TABLE `delivery_log`";
+			specialeffect2 119; // Effect Success Clear log.
+			}
+			close;
+		}
+	
+	
+	
+	
+	}
+
+OnInit:
+		//waitingroom "Delivery",0;
+		.gm_level = 1;
+		bindatcmd("senditem",strnpcinfo(1)+"::OnWhisperGlobal",0,0); // GM Level can only access this wispher
+		end;
+}
+
+//--- Map ---//
+prontera,160,191,4	duplicate(Ybba)	Ybba#prt	900
+//izlude,133,171,0	duplicate(Ybba)	Ybba#izl	900
+//gonryun,164,131,0	duplicate(Ybba)	Ybba#gon	900
+//morocc,153,97,4	duplicate(Ybba)	Ybba#moc	900
+//louyang,210,108,4	duplicate(Ybba)	Ybba#lou	900
+//hugel,89,158,0	duplicate(Ybba)	Ybba#hug	900
+
+
+-	script	express	-1,{
+
+OnPCLoginEvent:
+		query_sql "SELECT `recepient_id` FROM `delivery` WHERE `recepient_id` = '"+getcharid(3)+"';",.@acc;
+		if (!getarraysize(.@acc)){ end; }// Verify if the Account is excist
+
+	mes "^08088A---[ BRO EXPRESS Delivery ]---^000000";
+	mes "Greetings!";
+	mes "You have a delivery go to Prontera Center look for ^08088A Ybba ^000000";
+	close;
+			
+}
+/*
+
+CREATE TABLE IF NOT EXISTS `delivery` (
+  `number` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `recepient_id` int(11) unsigned NOT NULL,
+  `recepient_name` varchar(45) NOT NULL,
+  `dcode` int(11) unsigned NOT NULL DEFAULT '0',
+  `item` int(11) unsigned NOT NULL DEFAULT '0',
+  `refine` int(11) unsigned NOT NULL DEFAULT '0',
+  `card0` int(11) unsigned NOT NULL DEFAULT '0',
+  `card1` int(11) unsigned NOT NULL DEFAULT '0',
+  `card2` int(11) unsigned NOT NULL DEFAULT '0',
+  `card3` int(11) unsigned NOT NULL DEFAULT '0',
+  `qty` int(11) unsigned NOT NULL DEFAULT '1',
+  `type` int(11) unsigned NOT NULL DEFAULT '1',
+  `day` int(11) unsigned NOT NULL DEFAULT '0',
+  `sender` int(11) unsigned NOT NULL,
+  `sender_name` varchar(45) NOT NULL,
+  PRIMARY KEY (`number`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC AUTO_INCREMENT=7 ;
+
+CREATE TABLE IF NOT EXISTS `delivery_log` (
+  `number` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `recepient_id` int(11) unsigned NOT NULL,
+  `recepient_name` varchar(45) NOT NULL,
+  `item` int(11) unsigned NOT NULL DEFAULT '0',
+  `refine` int(11) unsigned NOT NULL DEFAULT '0',
+  `card0` int(11) unsigned NOT NULL DEFAULT '0',
+  `card1` int(11) unsigned NOT NULL DEFAULT '0',
+  `card2` int(11) unsigned NOT NULL DEFAULT '0',
+  `card3` int(11) unsigned NOT NULL DEFAULT '0',
+  `qty` int(11) unsigned NOT NULL DEFAULT '1',
+  `type` int(11) unsigned NOT NULL DEFAULT '1',
+  `day` int(11) unsigned NOT NULL DEFAULT '0',
+  `sender` int(11) unsigned NOT NULL,
+  `sender_name` varchar(45) NOT NULL,
+  PRIMARY KEY (`number`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC AUTO_INCREMENT=7 ;
+*/
