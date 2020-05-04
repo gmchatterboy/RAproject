@@ -1,0 +1,174 @@
+/*-------------------------------------------------------
+	Emulator: rAthena
+	Script by: GM Chatterboy
+	Version: 1.0 04-29-2020
+	NPC: Cooking System
+/-------------------------------------------------------*/
+prontera,146,93,6	script	Chef Moe	820,{
+	attachnpctimer;
+	.missing = 0;
+	.@npcName$ = "[Chef Moe]";
+	
+	mes .@npcName$;
+	mes "Hello there! what do you want me to teach you how to cook?";
+	next;
+	
+	mes .@npcName$;
+	mes "This food we prepare today is not a FOOD to eat, it is used by the witch crafts to make them prepare your request from them...";
+	next;
+	
+	mes .@npcName$;
+	mes "Enough serious Stories! Lets Start!!! and wear your ^FF0000 "+getitemname(5026)+"^000000 if not it take a slow process..";
+	next;
+	
+	mes .@npcName$;
+	mes "Please Select what delicacies you want to cook and prepare those ingredients ok?";
+	next;
+	
+	switch(select("~ Tongue:~ Desert Scorpion:~ Dragon Breath Cocktail:~ Hwergelmir's Tonic:~ Nine Tail:~ Stew of Immortality")){
+		
+		case 1:
+				.@foodprep$ = "Steam Tongue";
+				.@item1 = 7482;  .@qty1 = 1;
+				.@item2 = 1067; .@qty2 = 20;
+				.@item3 = 7457; .@qty3 = 1;
+				.@item4 = 511; .@qty4 = 50;
+				.@getitem = 40632; .@gqty = 5;
+				.mes = 4;
+				goto cook;
+				break;
+			
+		case 2:
+				.@foodprep$ = "Steam Desert Scorpion";
+				.@item1 = 7482;  .@qty1 = 1;
+				.@item2 = 1067; .@qty2 = 20;
+				.@item3 = 7457; .@qty3 = 1;
+				.@item4 = 904; .@qty4 = 50;
+				.@getitem = 40633; .@gqty = 5;
+				.mes = 4;
+				goto cook;
+				break;
+				
+		case 3:
+				.@foodprep$ = "Dragon Breath Cocktail";
+				.@item1 = 7482;  .@qty1 = 1;
+				.@item2 = 1067; .@qty2 = 20;
+				.@item3 = 7457; .@qty3 = 1;
+				.@item4 = 7265; .@qty4 = 50;
+				.mes = 4;
+				.@getitem = 40634; .@gqty = 5;
+				goto cook;
+				break;
+				
+		case 4:
+				.@foodprep$ = "Hwergelmir's Tonic";
+				.@item1 = 7482;  .@qty1 = 1;
+				.@item2 = 1067; .@qty2 = 20;
+				.@item3 = 1093; .@qty3 = 5;
+				.@item4 = 509; .@qty4 = 50;
+				.@item5 = 510; .@qty5 = 50;
+				.@item6 = 511; .@qty6 = 50;
+				.@getitem = 40635; .@gqty = 5;
+				.mes = 6;
+				goto cook;
+				break;
+
+		case 5:
+				.@foodprep$ = "Nine Tail";
+				.@item1 = 7482;  .@qty1 = 1;
+				.@item2 = 1067; .@qty2 = 20;
+				.@item3 = 7457; .@qty3 = 1;
+				.@item4 = 1022; .@qty4 = 50;
+				.@getitem = 40636; .@gqty = 5;
+				.mes = 4;
+				goto cook;
+				break;
+
+		case 6:
+				.@foodprep$ = "Stew of Immortality";
+				.@item1 = 7482;  .@qty1 = 1;
+				.@item2 = 1067; .@qty2 = 20;
+				.@item3 = 1093; .@qty3 = 5;
+				.@item4 = 501; .@qty4 = 20;
+				.@item5 = 502; .@qty5 = 20;
+				.@item6 = 503; .@qty6 = 20;
+				.@item7 = 504; .@qty7 = 20;
+				.@item8 = 505; .@qty8 = 20;
+				.@item9 = 506; .@qty9 = 20;
+				.@getitem = 40637; .@gqty = 5;
+				.mes = 9;
+				goto cook;
+				break;
+	}
+
+cook:
+		mes .@npcName$;
+		mes "Hello there!";
+		mes "Your cooking a ^0000FF"+.@foodprep$+"^000000.";
+		next;
+		
+		mes .@npcName$;
+		mes "I need these things:";
+		mes "^FF0000"+.@qty1+"x "+getitemname(.@item1)+"";
+		mes ""+.@qty2+"x "+getitemname(.@item2)+"";
+		mes ""+.@qty3+"x "+getitemname(.@item3)+"";
+		mes ""+.@qty4+"x "+getitemname(.@item4)+"";
+		if(.mes >=5){ mes ""+.@qty5+"x "+getitemname(.@item5)+""; }
+		if(.mes >=6){ mes ""+.@qty6+"x "+getitemname(.@item6)+""; }
+		if(.mes >=7){ mes ""+.@qty7+"x "+getitemname(.@item7)+""; }
+		if(.mes >=8){ mes ""+.@qty8+"x "+getitemname(.@item8)+""; }
+		if(.mes >=9){ mes ""+.@qty9+"x "+getitemname(.@item9)+""; }
+		mes "^000000";
+		next;
+		
+	if(select("Start Cooking:Leave")==2){ close; }
+	
+	if(.mes == 4){
+		if(countitem(.@item1)<.@qty1) || 
+		(countitem(.@item2)<.@qty2) || 
+		(countitem(.@item3)<.@qty3) || 
+		(countitem(.@item4)<.@qty4) { .missing = 1; }
+		}
+		
+	if(.mes == 6){
+		if(countitem(.@item1)<.@qty1) || 
+		(countitem(.@item2)<.@qty2) || 
+		(countitem(.@item3)<.@qty3) || 
+		(countitem(.@item4)<.@qty4) || 
+		(countitem(.@item5)<.@qty5) || 
+		(countitem(.@item6)<.@qty6){ .missing = 1; }
+		}
+		
+	if(.mes == 9){
+		if(countitem(.@item1)<.@qty1) || 
+		(countitem(.@item2)<.@qty2) || 
+		(countitem(.@item3)<.@qty3) || 
+		(countitem(.@item4)<.@qty4) || 
+		(countitem(.@item5)<.@qty5) || 
+		(countitem(.@item6)<.@qty6) ||
+		(countitem(.@item7)<.@qty7) ||
+		(countitem(.@item8)<.@qty8) ||
+		(countitem(.@item9)<.@qty9){ .missing = 1; }
+		}
+		
+	if(.missing){
+		mes .@npcName$;
+		mes "You dont prepare the complete ingredients!";
+		close;}
+	
+	if(isequipped(5026)){ .@fcast = 15;}else{ .@fcast = 50; }// Cast Time
+		close2;
+		
+		progressbar "ffffff",.@fcast;
+		getitem .@getitem,.@gqty;
+		delitem .@item1,.@qty1;
+		delitem .@item2,.@qty2;
+		delitem .@item3,.@qty3;
+		delitem .@item4,.@qty4;
+		if(.mes >= 5){ delitem .@item5,.@qty5; }
+		if(.mes >= 6){ delitem .@item6,.@qty6; }
+		if(.mes >= 7){ delitem .@item7,.@qty7; }
+		if(.mes >= 8){ delitem .@item8,.@qty8; }
+		if(.mes >= 9){ delitem .@item9,.@qty9; }
+		end;
+}
