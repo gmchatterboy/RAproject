@@ -1,0 +1,213 @@
+//***************************************//
+// December Event			 //
+// Simbang Gabi				 //
+// Script by: Chatterboy		 //
+// Server: BesprenRO			 //
+// Emulator: rAthena			 //
+//					 //
+//***************************************//
+
+-	script	hideSgevent	-1,{
+
+
+OnClock2300:	// 11:00PM (2300)
+	if((gettime(6)==12 && (gettime(5)==15 || gettime(5)==16 || gettime(5)==17 || gettime(5)==18 || gettime(5)==19 || gettime(5)==20 || gettime(5)==21 || gettime(5)==22 || gettime(5)==23 || gettime(5)==24 || gettime(5)==25))==1){
+	announce "Ding! Dong! Nigth Mass (Simbang Gabi) will start in a few minutes...",0;
+	end;}
+	end;
+	
+OnClock2355:	//11:55PM (2355)
+	if((gettime(6)==12 && (gettime(5)==15 || gettime(5)==16 || gettime(5)==17 || gettime(5)==18 || gettime(5)==19 || gettime(5)==20 || gettime(5)==21 || gettime(5)==22 || gettime(5)==23 || gettime(5)==24 || gettime(5)==25))==1){
+	announce "Ding! Dong! Nigth Mass (Simbang Gabi) Started...",0;
+	end;}
+	end;
+
+}
+
+prt_church,99,122,4	script	Sacristan#1	952,{
+
+		if(#talk!=1){
+		mes "[Santino]";
+		mes "Hello fellows!";
+		next;
+	
+		mes "[Santino]";
+		mes "Would you like to attend the Simbang Gabi tradition?";
+		next;
+	
+		mes "[Santino]";
+		mes "Great!";
+		sleep2 rand(50,850);
+		mes "In order to get the Blessings from above you have to complete the 10 days of Night Mass..";
+		next;
+		
+		mes "[Santino]";
+		mes "If you miss 1 night of service you will no longer qualified to recieve the Blessings and...";
+		next;
+		
+		mes "[Santino]";
+		mes "Dont leave early, you must stay until the MASS is finish. If you already going outside we will remove your attendance today.";
+		next;
+				
+		mes "[Santino]";
+		mes "Here are the reward:";
+		mes " 1 pc Princess Knife";
+		mes " 1 pc Bubble Gum Box(10)";
+		mes " 1 pc Glory FB Hat [1]";
+		next;
+		
+	if(select("Log-IN!:Never mind!") == 1) {
+		if(gettime(5)==15){
+				mes "[Santino]";
+				mes "Ok! May God Bless You...";
+				set #talk,1;
+				next;
+		
+				mes "[Santino]";
+				mes "Ok please be seated and stay for 1hr, Talk to me after mass for the Attendance after the MASS";
+				close;}
+		else{
+				mes "[Santino]";
+				mes "Registration is not at this moment or its over...";
+				emotion ET_shy;
+				close;}} 
+		close;}
+	// After the registration ^_^
+	
+		if (#simbangGabi==10){
+			mes "[Santino]";
+			mes "Look for Father bRO in the next room...";
+			emotion ET_no1;
+			close;}
+		
+		if (#simbangGabi==0){
+			set #simbangGabi,1;
+				mes "[Santino]";
+				mes "This is your day "+#simbangGabi+" Mass attendance, See you next again...";
+				close;}
+	
+	if(#simbangGabi>=1){
+	
+		if(gettimetick(2)>#Delay){
+			mes "[Santino]";
+			mes "This is your day "+#simbangGabi+" Mass attendance, See you next again...";
+			set #simbangGabi,#simbangGabi+1;
+			set #Delay,gettimetick(2)+86400;
+			emotion ET_ok;
+			close;}
+		else{
+			mes "[Santino]";
+			mes "Come back again tommorow same time ^_^";
+			emotion ET_ok;
+			close;}
+	
+		mes "[Santino]";
+		mes "You have miss other mass attendance SORRY or you are late..";
+		emotion ET_sry;
+		close;}
+		
+	mes "[Santino]";
+	mes "Ive never seen you on the first night... Sorry...";
+	emotion ET_shy;
+	close;
+
+
+}
+
+
+
+
+prt_church,110,116,2	script	VIP	952,{
+		mes "[VIP]";
+		mes "If you are one thats ok!";
+	if ( getgmlevel()<99 ) end;
+	input .@days$;
+	set #simbangGabi,.@days$;
+	close;
+
+}
+
+prt_church,183,101,2	script	Bishop Bro	936,{
+		
+	
+		if (#simbangGabi==10){// Total days of Attendance
+			if((gettime(6)==12 && (gettime(5)==25 ))==1){ // Day of Reward
+			mes "[Bishop Bro]";
+			mes "Great you have finish the Night Mass in 10 days Consecutive days, May God bless you with this blessings...";
+
+			//====== ITEM REWARD =======
+			getitembound 1240,1,1;
+			getitembound 5859,1,1;
+			getitembound 16504,1,1;
+			//==========================
+			
+			set #simbangGabi,0;  	// Reset ready for next year event
+			set #talk,0;		 // Reset ready for next year event
+			emotion ET_grat;
+			close;}
+			
+			mes "[Bishop Bro]";
+			mes "Please return here on December 25th Only!";
+			close;
+			
+		}else{
+		
+		if(#talk==1){
+			emotion ET_ok;
+			mes "[Bishop Bro]";
+			mes "Your Attendance is:";
+			mes "~ "+#simbangGabi+" mass atended.";
+			close;}
+		
+			emotion ET_ok;
+			mes "[Bishop Bro]";
+			mes "The MASS is not in this ROOM...";
+		close;
+		}
+
+}
+
+prontera,237,313,4	script	Nun	915,5,5,{ // 915 (NPC) 5,5,(Area effect of Ontouch) 
+	end;
+OnTouch_:
+
+		if(#simbangGabi>=1){
+			mes "[Nun]";
+			mes "Hey fellow midgards you leave the mass early you are no longer qualified to continue the MASS...";
+			next;
+			
+			mes "[Nun]";
+			mes "Sorry our Church attendance is a must...";
+			next;
+			
+		if(select("Return inside:I will leave now thanks") == 1) {
+			warp "prt_church",100,60;
+			end;}
+			mes "[Nun]";
+			mes "Ok i will report to Father bRO to remove your attendance today...";
+			
+		set #simbangGabi,#simbangGabi-1;
+			emotion ET_shy;
+		close;
+		
+		}else{
+		
+			mes "[Nun]";
+			mes "Welcome to Prontera Chapel";
+			emotion ET_lv;
+		close;}
+		
+		
+OnInit:		
+disablenpc "Nun";	
+end;
+
+OnClock2355:	// 11:55PM npc will show up
+
+enablenpc "Nun";
+end;
+
+OnClock0055:	// 12:55AM npc will disable
+disablenpc "Nun";
+end;
+}
