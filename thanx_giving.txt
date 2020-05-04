@@ -1,32 +1,10 @@
-/*
-
-Thanks Giving Event 2016 (INC)
-Script by: Chatterboy
-Emulator: rAthena
-Version: 1.0
-Reward: 17477 (Unlimited Box II)
-
-*/
-
-/*
- gettime <type>;
- 
-This function will return specified information about the current system time.
-
-1 - Seconds (of a minute)
-2 - Minutes (of an hour)
-3 - Hour (of a day)
-4 - Week day (0 for Sunday, 6 is Saturday)
-5 - Day of the month.
-6 - Number of the month.
-7 - Year.
-8 - Day of the year.
-
-It will only return numbers.
-
-if (gettime(4)==6) mes "It's a Saturday. I don't work on Saturdays.";
-*/
-
+/*-----------------------------------------------------
+	Script by: GM Chatterboy
+	Emulator: rAthena
+	Version: 1.1
+	Date: 04-29-2020
+	NPC: Thanks Giving Event
+------------------------------------------------------*/
 prontera,165,158,3	script	bRO	832,{
 if((gettime(6)==12&& (gettime(5)==17 || gettime(5)==18))==1){
 	set @ACID,getcharid(3); // Account ID
