@@ -1,12 +1,10 @@
-//***************************************//
-// December Event			 //
-// Simbang Gabi				 //
-// Script by: Chatterboy		 //
-// Server: BesprenRO			 //
-// Emulator: rAthena			 //
-//					 //
-//***************************************//
-
+/*-----------------------------------------------------
+	Script by: GM Chatterboy
+	Emulator: rAthena
+	Version: 1.1
+	Date: 04-29-2020
+	NPC: Simbang Gabi
+------------------------------------------------------*/
 -	script	hideSgevent	-1,{
 
 
