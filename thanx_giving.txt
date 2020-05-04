@@ -1,0 +1,340 @@
+/*
+
+Thanks Giving Event 2016 (INC)
+Script by: Chatterboy
+Emulator: rAthena
+Version: 1.0
+Reward: 17477 (Unlimited Box II)
+
+*/
+
+/*
+ gettime <type>;
+ 
+This function will return specified information about the current system time.
+
+1 - Seconds (of a minute)
+2 - Minutes (of an hour)
+3 - Hour (of a day)
+4 - Week day (0 for Sunday, 6 is Saturday)
+5 - Day of the month.
+6 - Number of the month.
+7 - Year.
+8 - Day of the year.
+
+It will only return numbers.
+
+if (gettime(4)==6) mes "It's a Saturday. I don't work on Saturdays.";
+*/
+
+prontera,165,158,3	script	bRO	832,{
+if((gettime(6)==12&& (gettime(5)==17 || gettime(5)==18))==1){
+	set @ACID,getcharid(3); // Account ID
+	set @CID,getcharid(0);	// Character ID
+	.@tPrize = F_Rand( 16563,15071,12710); // Item Price
+	set	.@tPrizeAmt,1;		// Quantity
+	
+	
+		query_sql "SELECT `snum`FROM event_log WHERE `char_id` = '"+@CID+"';",@snum;
+			
+		if(@snum==1){
+				mes "[bRO]";
+				mes "You already recieve your presents ^_^";
+				emotion ET_gg;
+				close;
+				}
+		if(#thanxGiving==1){ 
+				mes "[bRO]";
+				mes "What are you doing? Talk to Turpeco in Morocc.";
+				mes "Coordinate ^0101DF(morocc 193, 58)^000000.";
+				emotion ET_hmm;
+				close;}
+				
+		if(#thanxGiving==6){
+		
+				mes "[bRO]";
+				mes "Congratulation you complete the Quest... HAPPY THANX GIVING!!!";	
+				
+			query_sql("UPDATE event_log SET `status` = 'COMPLETE' WHERE char_id = "+@CID+";");
+			query_sql("UPDATE event_log SET `snum` = '1' WHERE char_id = "+@CID+";");
+			set #thanxGiving,0;		// Clear the log event on each NPC not on DB...
+			sleep2 rand(100,2000);	// Loading its like something working on
+			if(.@tPrize==12710){ set .@tPrizeAmt,50;}
+			getitem .@tPrize,.@tPrizeAmt;
+			close;
+			}
+				
+				
+		emotion ET_lv;
+		mes "[bRO]";
+		mes "Hello travelers!... Thanks Giving quest only for ^0101DF2 days 17-18^000000 of ^0101DFDecember^000000...";
+		next;
+	
+		mes "[bRO]";
+		mes "The thanx giving limitted edetion reward is:";
+		mes "~ 1x Box ^0101DF"+getitemname(16563)+"^000000 ";
+		mes "~ 1x Box ^0101DF"+getitemname(15071)+"^000000 ";
+		mes "~ 10x pcs ^0101DF"+getitemname(12710)+"^000000 ";
+		mes "Random reward...";
+		emotion ET_gg;
+		next;
+		
+		mes "[bRO]";
+		mes "Do you want to participate this event?";
+		next;
+	
+	if(select("Yes!:No!") == 1) {
+	
+	
+	
+		query_sql "SELECT `account_id` FROM event_log WHERE `account_id` = '"+@ACID+"';",@accid;
+		
+			if(@accid==@ACID){
+				mes "[bRO]";
+				mes "This event is valid only for one-time every account... Im Sorry!!!";
+				emotion ET_sry;
+				close;}
+				
+				mes "[bRO]";
+				mes "Ok listen carefully.";
+				next;
+				
+				mes "[bRO]";
+				mes "Talk to Turpeco in Morocc.";
+				mes "Coordinate ^0101DF(morocc 193, 58)^000000.";
+		set #thanxGiving,1;
+		query_sql "INSERT INTO `event_log` (`account_id`,`char_id`,`name`,`status`,`snum`) VALUES ("+@ACID+","+@CID+",'"+strcharinfo(0)+"','INCOMPLETE','0')",@esc$;
+		close;
+		}
+
+		mes "[bRO]";
+		mes "Ok see you arround....";
+		emotion ET_no1;
+		close;}
+		
+		mes "[bRO]";
+		mes "Thanks Giving Event will start on December 17 and 18...";
+		emotion ET_ok;
+		close;
+
+}
+
+morocc,193,58,0	script	Turpeco	875,{
+		
+		if(#thanxGiving==4){
+			emotion ET_omg;
+			mes "[Turpeco]";
+			mes "Grrrrrr!!! im not a GAY!";
+			set #thanxGiving,#thanxGiving+1;
+			close;
+		}
+		
+		if(#thanxGiving==2){
+			
+			mes "[Turpeco]";
+			mes "Great! you may inform Chief Judge Oda that i am is ready for the contest.";
+			set #thanxGiving,#thanxGiving+1;
+			emotion ET_no1;
+			close;			
+			}
+			
+		if(#thanxGiving==1){
+			emotion ET_heh;
+			mes "[Turpeco]";
+			mes "Oh! Mr bRO recommend you to meet me...";
+			sleep2 rand(100,2000);
+			mes "Hmm please do me a favor find me a ^0101DF50pcs of Jellopy^000000...";
+			next;
+			
+			mes "[Turpeco]";
+			mes "I use it to win the Contest of making shining things haha...";
+			emotion ET_heh;
+			next;
+			if(select("I have Jellopy...:Ill be back...")==1){
+				if(countitem(909)<50){
+					mes "[Turpeco]";
+					mes "You dont have enough Jellopy";
+					emotion ET_shy;
+					close;
+					}
+				
+				else{
+				mes "[Turpeco]";
+				mes "Thanks! by the way kill some Peco Peco 30 of them in moc_fild01.";
+				delitem 909,50;
+				emotion ET_thx;
+				next;
+				
+				mes "[Turpeco]";
+				mes "Return here after you finish them...";
+				next;
+				
+				warp "moc_fild01", 100, 109, getcharid(0);
+				monster "this", -1,-1, "PecoPeco", 1019, 30, strnpcinfo(3)+"::Onmobdead";
+				announce strcharinfo(0) +" has started monster hunting for Thanx Giving Quest!", 0;
+				set #killed,0;
+				hideonnpc "Turpeco";
+				hideoffnpc "PecoPeco";
+				close;
+				}
+			}
+				mes "[Turpeco]";
+				mes "Ok Return here after you get that ^_^ them...";
+				emotion ET_no1;
+				close;
+
+		}else{
+		
+			if (#thanxGiving==3){
+				mes "[Turpeco]";
+				mes "Just inform Chief Judge Oda that i am is ready for the contest!";
+				emotion ET_omg;
+				close;}
+				
+			if(#thanxGiving==5){
+				mes "[Turpeco]";
+				mes "Huhuhuhuhu";
+				emotion ET_sob;
+				close;}
+				
+		mes "[Turpeco]";
+		mes "Hello traveller whats up!";
+		emotion ET_hmm;
+		close;}
+		
+Onmobdead:
+			
+		set #killed,#killed+1;
+		
+				if(#killed==30){
+					
+					
+					dispbottom "You only have killed "+#killed;
+					sleep2 rand(100,2000);
+					
+					dispbottom "Your Quest is DONE! return to Turpeco...";
+					announce strcharinfo(0) +" has DONE monster hunting for Thanx Giving Quest!", 0;
+					set #thanxGiving,#thanxGiving+1;
+					hideoffnpc "Turpeco";
+					hideonnpc "PecoPeco";
+					end;
+					
+				}else{
+					dispbottom "You only have killed "+#killed;
+					end;
+				}
+			
+OnPCDieEvent:
+OnPCLogoutEvent:
+				
+					if ( strcharinfo(3) != "moc_fild01" ) end;
+					announce strcharinfo(1) +" has failed monster hunting", 0;
+					hideoffnpc "Turpeco";
+					hideonnpc "PecoPeco";	
+					end;
+
+}
+
+morocc,193,58,0	script	PecoPeco	428,{
+		mes "["+strcharinfo(0)+"]";
+		mes "Mr Turpeco on break maybe he is with the traveler who join his mission...";
+		emotion ET_paper;
+		close;
+OnInit:		
+hideonnpc "PecoPeco";
+end;
+}
+
+morocc_in,77,100,4	script	Chief Judge Oda	829,{
+
+
+	if(#thanxGiving==5){
+		mes "[Chief Oda]";
+		mes "Haha! he is angry right?";
+		emotion ET_heh;
+		next;
+		
+		mes "[Chief Oda]";
+		mes "Ok bring me different ingridients: 5 Meat 50 Log 5 Fish Tail 5 Fresh Fish 5 Tentacle 5 Grape 5 Potato 5 Strawberry.";
+		dispbottom "Chief Oda: Ok bring me different ingridients: 5 Meat 50 Log 5 Fish Tail 5 Fresh Fish 5 Tentacle 5 Grape 5 Potato 5 Strawberry.";
+		emotion ET_no1;
+		next;
+		
+		if(select("I have it all...:Ill be back later...")==1){
+		
+					if(countitem(517)<5 || countitem(7201)<50 || countitem(1023)<5 || countitem(579)<5 || countitem(962)<5 || countitem(514)<5 || countitem(516)<5 || countitem(578)<5){
+						mes "[Chief Oda]";
+						mes "Incomplete Ingredients return if you complete already...";
+						emotion ET_pif;
+						close;		
+						}
+						mes "[Chief Oda]";
+						mes "Congratulation! Happy thanx Giving and in return i give you the reward you can get it to Mr bRO in prontera...";
+						delitem 517,5;
+						delitem 7201,50;
+						delitem 1023,5;
+						delitem 579,5;
+						delitem 962,5;
+						delitem 514,5;
+						delitem 516,5;
+						delitem 578,5;
+						set #thanxGiving,#thanxGiving+1;
+						emotion ET_thx;
+						close;
+			}
+					mes "[Chief Oda]";
+					mes "Oka see yah later!...";
+					emotion ET_no1;
+					close;
+	
+		
+	}
+		if(#thanxGiving==3){
+			mes "[Chief Oda]";
+			mes "This isn't a beauty contes!";
+			next;
+			
+			mes "[Chief Oda]";
+			mes "Tell that to Turpeco, after you tell him come back to me...";
+			set #thanxGiving,#thanxGiving+1;
+			emotion ET_heh;
+			close;
+		
+		}else{
+		
+			if(#thanxGiving==4){
+				mes "[Chief Oda]";
+				mes "Tell that to Turpeco, after you tell him come back to me...";
+				emotion ET_wah;
+				close;}
+				
+			if(#thanxGiving==6){
+				mes "[Chief Oda]";
+				mes "Get your reward to ^08088AMr bRO^000000 in prontera...";
+				emotion ET_no1;
+				close;}
+			
+			mes "[Chief Oda]";
+			mes "Do you want to order food?";
+			emotion ET_heh;
+			close;
+	
+	}
+
+}
+/*
+--
+-- Table structure for table `event_log`
+--
+
+CREATE TABLE IF NOT EXISTS `event_log` (
+  `log_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `account_id` int(11) unsigned NOT NULL,
+  `char_id` int(11) unsigned NOT NULL,
+  `name` varchar(45) NOT NULL,
+  `status` enum('INCOMPLETE','COMPLETE') NOT NULL DEFAULT 'INCOMPLETE',
+  `snum` enum('0','1') NOT NULL DEFAULT '0',
+  PRIMARY KEY (`log_id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC AUTO_INCREMENT=3 ;
+
+*/
