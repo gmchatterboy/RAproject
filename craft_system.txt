@@ -1,45 +1,49 @@
 /*-------------------------------------------------------
-
 	Emulator: rAthena
 	Script by: GM Chatterboy
 	Version: 1.0 04-29-2020
 	NPC: Crafts Man
-
 /-------------------------------------------------------*/
 
-prontera,142,196,3	script	Craft's Man	63,{
+prontera,183,194,2	script	Witch Craft's	735,{
+		.@npcName$ = "[^088A08 Witch Crafts ^000000]";
 
 		emotion ET_THROB; //Love emoticon
-		mes "[Craft's Man]";
-		mes "We are here to provide one of the most unique Craft system!";
-		mes "I can help you to craft, but with only ^FF0000 Chance Rate^000000 of success.";
+		mes .@npcName$;
+		mes "I'm here to provide one of the most unique Craft system!";
+		mes "I can help you to craft, but with only ^FF0000 Chance^000000 of success.";
 		next;
 	
-		mes "[Craft's Man]";
+		mes .@npcName$;
 		mes "Choose what you want to craft...";
 		next;
 	
-	switch(select("~ Elven Arrow:~ Holy Water:~ Poison Bottle:~ Fire Element Converter:~ Water Elemental Converter:~ Earth Elemental Converter:~ Wind Elemental Converter")){
+	switch(select("~ Stats Crafting:~ Arrow of Counter Evil:~ Holy Water:~ Poison Bottle:~ Fire Element Converter:~ Water Elemental Converter:~ Earth Elemental Converter:~ Wind Elemental Converter")){
 		
-		case 1: // Elven Arrow
-				.@craft_item$ = "Elven Arrow";
+		case 1:
+				callfunc("stats_craft");
+				break;
+		
+		case 2: // Elven Arrow
+				.@craft_item$ = "Arrow of Counter Evil";
 				.@item1 = 671;  .@qty1 = 1;
 				.@item2 = 7203; .@qty2 = 5;
 				.@item3 = 7201; .@qty3 = 5;
-				.@percent = 50;	.@mes = 3;
-				.@getitem = 1773; .@gqty = 5;
+				.@cRate = 50;	.@mes = 3;
+				.@getitem = 1766; .@gqty = 5;
 				goto CONVO;
+				break;
 				
-		case 2: // Holy Water
+		case 3: // Holy Water
 				.@craft_item$ = "Holy Water";
 				.@item1 = 671;  .@qty1 = 2;
 				.@item2 = 713; .@qty2 = 1;
-				.@percent = 60;	.@mes = 2;
+				.@cRate = 60;	.@mes = 2;
 				.@getitem = 523; .@gqty = 1;
 				goto CONVO;
 
 				
-		case 3: // Poison Bottle
+		case 4: // Poison Bottle
 				.@craft_item$ = "Poison Bottle";
 				.@item1 = 671;  .@qty1 = 2;
 				.@item2 = 713; .@qty2 = 1;
@@ -48,100 +52,105 @@ prontera,142,196,3	script	Craft's Man	63,{
 				.@item5 = 952; .@qty5 = 1;
 				.@item6 = 972; .@qty6 = 1;
 				.@item7 = 7033; .@qty7 = 1;
-				.@percent = 10;	.@mes = 7;
+				.@cRate = 10;	.@mes = 7;
 				.@getitem = 678; .@gqty = 1;
 				goto CONVO;
+				break;
 				
-		case 4: // Fire Element Converter
+		case 5: // Fire Element Converter
 				.@craft_item$ = "Fire Element";
 				.@item1 = 671;  .@qty1 = 2;
 				.@item2 = 904; .@qty2 = 3;
 				.@item3 = 7433; .@qty3 = 1;
-				.@percent = 10;	.@mes = 3;
+				.@cRate = 10;	.@mes = 3;
 				.@getitem = 12114; .@gqty = 1;
 				goto CONVO;
+				break;
 				
-		case 5: // Water Elemental Converter
+		case 6: // Water Elemental Converter
 				.@craft_item$ = "Water Element";
 				.@item1 = 671;  .@qty1 = 2;
 				.@item2 = 946; .@qty2 = 3;
 				.@item3 = 7433; .@qty3 = 1;
-				.@percent = 10;	.@mes = 3;
+				.@cRate = 10;	.@mes = 3;
 				.@getitem = 12115; .@gqty = 1;
 				goto CONVO;
+				break;
 				
-		case 6: // Earth Elemental Converter
+		case 7: // Earth Elemental Converter
 				.@craft_item$ = "Earth Element";
 				.@item1 = 671;  .@qty1 = 2;
 				.@item2 = 947; .@qty2 = 3;
 				.@item3 = 7433; .@qty3 = 1;
-				.@percent = 10;	.@mes = 3;
+				.@cRate = 10;	.@mes = 3;
 				.@getitem = 12116; .@gqty = 1;
 				goto CONVO;
+				break;
 				
-		case 7: // Wind Elemental Converter
+		case 8: // Wind Elemental Converter
 				.@craft_item$ = "Wind Element";
 				.@item1 = 671;  .@qty1 = 2;
 				.@item2 = 947; .@qty2 = 3;
 				.@item3 = 7433; .@qty3 = 1;
-				.@percent = 10;	.@mes = 3;
+				.@cRate = 10;	.@mes = 3;
 				.@getitem = 12117; .@gqty = 1;
 
 			}
 	
-	
-
 CONVO:
-		mes "[Craft's Man]";
+		mes .@npcName$;
 		mes "Hello there!";
 		mes "Your crafting a ^0000FF"+.@craft_item$+"^000000.";
 		next;
 		
-		mes "[Craft's Man]";
+		mes .@npcName$;
 		mes "I need these things:";
 		mes "^FF0000"+.@qty1+"x "+getitemname(.@item1)+"";
-		if(.@mes <= 2){	mes ""+.@qty2+"x "+getitemname(.@item2)+"";}
-		if(.@mes <= 3){ mes ""+.@qty3+"x "+getitemname(.@item3)+"";}
-		if(.@mes <= 4){ mes ""+.@qty4+"x "+getitemname(.@item4)+"";}
-		if(.@mes <= 5){ mes ""+.@qty5+"x "+getitemname(.@item5)+"";}
-		if(.@mes <= 6){ mes ""+.@qty6+"x "+getitemname(.@item6)+"";}
-		if(.@mes <= 7){ mes ""+.@qty7+"x "+getitemname(.@item7)+"";}
-		if(.@mes <= 8){ mes ""+.@qty8+"x "+getitemname(.@item8)+"";}
+		if(.@mes >= 2){	mes ""+.@qty2+"x "+getitemname(.@item2)+"";}
+		if(.@mes >= 3){ mes ""+.@qty3+"x "+getitemname(.@item3)+"";}
+		if(.@mes >= 4){ mes ""+.@qty4+"x "+getitemname(.@item4)+"";}
+		if(.@mes >= 5){ mes ""+.@qty5+"x "+getitemname(.@item5)+"";}
+		if(.@mes >= 6){ mes ""+.@qty6+"x "+getitemname(.@item6)+"";}
+		if(.@mes >= 7){ mes ""+.@qty7+"x "+getitemname(.@item7)+"";}
+		if(.@mes >= 8){ mes ""+.@qty8+"x "+getitemname(.@item8)+"";}
 		mes "^000000";
 		next;
 		
 		if(select("Yes!:Leave")==2){ close;}
 Craft:
 
-	if(.@mes <= 2){ if(countitem(.@item1)>.@qty1) || (countitem(.@item2)>.@qty2) { goto INC; }}
-	if(.@mes <= 3){ if(countitem(.@item1)>.@qty1) || (countitem(.@item2)>.@qty2) || (countitem(.@item3)>.@qty3) { goto INC; }}
-	if(.@mes <= 4){ if(countitem(.@item1)>.@qty1) || (countitem(.@item2)>.@qty2) || (countitem(.@item3)>.@qty3) (countitem(.@item4)>.@qty4) { goto INC; }}
-	if(.@mes <= 5){ if(countitem(.@item1)>.@qty1) || (countitem(.@item2)>.@qty2) || (countitem(.@item3)>.@qty3) (countitem(.@item4)>.@qty4) (countitem(.@item5)>.@qty5) { goto INC; }}
-	if(.@mes <= 6){ if(countitem(.@item1)>.@qty1) || (countitem(.@item2)>.@qty2) || (countitem(.@item3)>.@qty3) (countitem(.@item4)>.@qty4) (countitem(.@item5)>.@qty5) (countitem(.@item6)>.@qty6) { goto INC; }}
-	if(.@mes <= 7){ if(countitem(.@item1)>.@qty1) || (countitem(.@item2)>.@qty2) || (countitem(.@item3)>.@qty3) (countitem(.@item4)>.@qty4) (countitem(.@item5)>.@qty5) (countitem(.@item6)>.@qty6) (countitem(.@item7)>.@qty7) { goto INC; }}
-	if(.@mes <= 8){ if(countitem(.@item1)>.@qty1) || (countitem(.@item2)>.@qty2) || (countitem(.@item3)>.@qty3) (countitem(.@item4)>.@qty4) (countitem(.@item5)>.@qty5) (countitem(.@item6)>.@qty6) (countitem(.@item7)>.@qty7) (countitem(.@item8)>.@qty8) { goto INC; }}
+	if(.@mes >= 2){ if(countitem(.@item1)<.@qty1) || (countitem(.@item2)<.@qty2) { goto INC; }}
+	if(.@mes >= 3){ if(countitem(.@item1)<.@qty1) || (countitem(.@item2)<.@qty2) || (countitem(.@item3)<.@qty3) { goto INC; }}
+	if(.@mes >= 4){ if(countitem(.@item1)<.@qty1) || (countitem(.@item2)<.@qty2) || (countitem(.@item3)<.@qty3) || (countitem(.@item4)<.@qty4) { goto INC; }}
+	if(.@mes >= 5){ if(countitem(.@item1)<.@qty1) || (countitem(.@item2)<.@qty2) || (countitem(.@item3)<.@qty3) || (countitem(.@item4)<.@qty4) || (countitem(.@item5)<.@qty5) { goto INC; }}
+	if(.@mes >= 6){ if(countitem(.@item1)<.@qty1) || (countitem(.@item2)<.@qty2) || (countitem(.@item3)<.@qty3) || (countitem(.@item4)<.@qty4) || (countitem(.@item5)<.@qty5) || (countitem(.@item6)<.@qty6) { goto INC; }}
+	if(.@mes >= 7){ if(countitem(.@item1)<.@qty1) || (countitem(.@item2)<.@qty2) || (countitem(.@item3)<.@qty3) || (countitem(.@item4)<.@qty4) || (countitem(.@item5)<.@qty5) || (countitem(.@item6)<.@qty6) || (countitem(.@item7)<.@qty7) { goto INC; }}
+	if(.@mes >= 8){ if(countitem(.@item1)<.@qty1) || (countitem(.@item2)<.@qty2) || (countitem(.@item3)<.@qty3) || (countitem(.@item4)<.@qty4) || (countitem(.@item5)<.@qty5) || (countitem(.@item6)<.@qty6) || (countitem(.@item7)<.@qty7) || (countitem(.@item8)<.@qty8) { goto INC; }}
 
 	specialeffect 101; //Effect Refine
 	delitem .@item1,.@qty1; 
-	if(.@mes <= 2){delitem .@item2,.@qty2;}
-	if(.@mes <= 3){delitem .@item3,.@qty3;}
-	if(.@mes <= 4){delitem .@item4,.@qty4;}
-	if(.@mes <= 5){delitem .@item5,.@qty5;}
-	if(.@mes <= 6){delitem .@item6,.@qty6;}
-	if(.@mes <= 7){delitem .@item7,.@qty7;}
-	if(.@mes <= 8){delitem .@item8,.@qty8;}
-	if(rand(100)<.@percent) {
-		specialeffect2 154; // Effect Success refine
-		getitem .@getitem,.@gqty;
-		mes "Here your item "+>@gqty+"x "+.@getitem+"!";
+	if(.@mes >= 2){delitem .@item2,.@qty2;}
+	if(.@mes >= 3){delitem .@item3,.@qty3;}
+	if(.@mes >= 4){delitem .@item4,.@qty4;}
+	if(.@mes >= 5){delitem .@item5,.@qty5;}
+	if(.@mes >= 6){delitem .@item6,.@qty6;}
+	if(.@mes >= 7){delitem .@item7,.@qty7;}
+	if(.@mes >= 8){delitem .@item8,.@qty8;}
+	
+	if(rand(100)<.@cRate) {
+		specialeffect2 154; 		// Effect Success refine
+		getitem .@getitem,.@gqty;	// Claim Item
+		
+		mes "Here your item "+.@gqty+"x "+.@getitem+"!";
 		next;
 		
-		mes "[Craft's Man]";
+		mes .@npcName$;
 		mes "Do you want me to craft some more?";
 		next;
 		
 		menu "Yes",Craft,"No",Quit;
 	} else {
+		mes .@npcName$;
 		specialeffect2 155; // Effect Failed refine
 		mes "I'm sorry, but I have failed to craft the "+getitemname(.@getitem)+".";
 		mes " ";
@@ -153,16 +162,291 @@ Craft:
 		close;		
 INC:
 	emotion ET_HUK;
-	mes "[Craft's Man]";
+	mes .@npcName$;
 	mes "Please complete the required items. Come back again if you have it all.";
 	close;
 	
 Quit:
 	emotion ET_KIK;
-	mes "[Craft's Man]";
+	mes .@npcName$;
 	mes "Come and see me again!";
 	close;	
-	
 
+}
+
+
+function	script	stats_craft	{
+
+
+		.@npcName$ = "[^088A08 Witch Crafts ^000000]";
+		
+
+		switch(select("~ Craft STR:~ Craft INT:~ Craft DEX:~ Craft AGI:~ Craft VIT:~ Craft LUK")){
+			
+			case 1:
+					.@menu = 1;
+					mes .@npcName$;
+					mes "Hello Travelers!";
+					mes "Do you want me to craft for you a STR beads, Plaase tell me how many +UP you want me to make for you.";
+					
+				while(input(.@ups,1,10)!=0){
+					mes .@adName$;
+					mes "--- ^DF013AERROR 404^000000 ---";
+					mes "Please Enter +Up's not lessthan +1 maximum of +10 only!";
+					close;}
+					next;
+					goto Setup;
+					break;
+					
+			case 2:
+					.@menu = 2;
+					mes .@npcName$;
+					mes "Hello Travelers!";
+					mes "Do you want me to craft for you a STR beads, Plaase tell me how many +UP you want me to make for you.";
+					
+				while(input(.@ups,1,10)!=0){
+					mes .@adName$;
+					mes "--- ^DF013AERROR 404^000000 ---";
+					mes "Please Enter +Up's not lessthan +1 maximum of +10 only!";
+					close;}
+					next;
+					goto Setup;
+					break;
+
+			case 3:
+					.@menu = 3;
+					mes .@npcName$;
+					mes "Hello Travelers!";
+					mes "Do you want me to craft for you a STR beads, Plaase tell me how many +UP you want me to make for you.";
+					
+				while(input(.@ups,1,10)!=0){
+					mes .@adName$;
+					mes "--- ^DF013AERROR 404^000000 ---";
+					mes "Please Enter +Up's not lessthan +1 maximum of +10 only!";
+					close;}
+					next;
+					goto Setup;
+					break;
+					
+			case 4:
+					.@menu = 4;
+					mes .@npcName$;
+					mes "Hello Travelers!";
+					mes "Do you want me to craft for you a STR beads, Plaase tell me how many +UP you want me to make for you.";
+					
+				while(input(.@ups,1,10)!=0){
+					mes .@adName$;
+					mes "--- ^DF013AERROR 404^000000 ---";
+					mes "Please Enter +Up's not lessthan +1 maximum of +10 only!";
+					close;}
+					next;
+					goto Setup;
+					break;
+					
+			case 5:
+					.@menu = 5;
+					mes .@npcName$;
+					mes "Hello Travelers!";
+					mes "Do you want me to craft for you a STR beads, Plaase tell me how many +UP you want me to make for you.";
+					
+				while(input(.@ups,1,10)!=0){
+					mes .@adName$;
+					mes "--- ^DF013AERROR 404^000000 ---";
+					mes "Please Enter +Up's not lessthan +1 maximum of +10 only!";
+					close;}
+					next;
+					goto Setup;
+					break;
+			
+			case 6:
+					.@menu = 6;
+					mes .@npcName$;
+					mes "Hello Travelers!";
+					mes "Do you want me to craft for you a STR beads, Plaase tell me how many +UP you want me to make for you.";
+					
+				while(input(.@ups,1,10)!=0){
+					mes .@adName$;
+					mes "--- ^DF013AERROR 404^000000 ---";
+					mes "Please Enter +Up's not lessthan +1 maximum of +10 only!";
+					close;}
+					next;
+					goto Setup;
+					break;
+
+		}// End 1st Menu
+
+Setup:
+	// QI Beads
+	setarray .@beads[0],4700,4701,4702,4703,4704,4705,4706,4707,4708,4709,/*STR*/
+						4710,4711,4712,4713,4714,4715,4716,4717,4718,4719,/*INT*/
+						4720,4721,4722,4723,4724,4725,4726,4727,4728,4729,/*DEX*/
+						4730,4731,4732,4733,4734,4735,4736,4737,4738,4739,/*AGI*/
+						4740,4741,4742,4743,4744,4745,4746,4747,4748,4749,/*VIT*/
+						4750,4751,4752,4753,4754,4755,4756,4757,4758,4759;/*LUK*/
+
+				// Menu Quest TYPE
+				if(.@menu==1){.@craft_item$ = "STR";}
+				if(.@menu==2){.@craft_item$ = "INT";}
+				if(.@menu==3){.@craft_item$ = "DEX";}
+				if(.@menu==4){.@craft_item$ = "AGI";}
+				if(.@menu==5){.@craft_item$ = "VIT";}
+				if(.@menu==6){.@craft_item$ = "LUK";}
+			
+				
+				/* ---------------------------------- Quest Item # 1 ------------------------------------------ */
+				
+				/* # of Ups		Quest ITEM         Quantity     Crafted					QTY of Crafted 	% Chance*/
+				
+			if(.@menu==1){ //STR
+				if (.@ups==1){ .@qi1 = 7263; .@qty1 = 10; .@crafted = .@beads[0]; .@craftQty = 1; .cRate = 10;}
+				if (.@ups==2){ .@qi1 = .@beads[0]; .@qty1 = 20; .@crafted = .@beads[1]; .@craftQty = 1; .cRate = 10;}
+				if (.@ups==3){ .@qi1 = .@beads[1]; .@qty1 = 30; .@crafted = .@beads[2]; .@craftQty = 1; .cRate = 9;}
+				if (.@ups==4){ .@qi1 = .@beads[2]; .@qty1 = 40; .@crafted = .@beads[3]; .@craftQty = 1; .cRate = 8;}
+				if (.@ups==5){ .@qi1 = .@beads[3]; .@qty1 = 50; .@crafted = .@beads[4]; .@craftQty = 1; .cRate = 7;}
+				if (.@ups==6){ .@qi1 = .@beads[4]; .@qty1 = 60; .@crafted = .@beads[5]; .@craftQty = 1; .cRate = 6;}
+				if (.@ups==7){ .@qi1 = .@beads[5]; .@qty1 = 70; .@crafted = .@beads[6]; .@craftQty = 1; .cRate = 5;}
+				if (.@ups==8){ .@qi1 = .@beads[6]; .@qty1 = 80; .@crafted = .@beads[7]; .@craftQty = 1; .cRate = 4;}
+				if (.@ups==9){ .@qi1 = .@beads[7]; .@qty1 = 90; .@crafted = .@beads[8]; .@craftQty = 1; .cRate = 3;}
+				if (.@ups==10){.@qi1 = .@beads[8]; .@qty1 = 100; .@crafted = .@beads[9]; .@craftQty = 1; .cRate = 2;}
+			}
+
+			if(.@menu==2){ //INT
+				if (.@ups==1){ .@qi1 = 7263; .@qty1 = 10; .@crafted = .@beads[10]; .@craftQty = 1; .cRate = 10;}
+				if (.@ups==2){ .@qi1 = .@beads[10]; .@qty1 = 20; .@crafted = .@beads[11]; .@craftQty = 1; .cRate = 10;}
+				if (.@ups==3){ .@qi1 = .@beads[11]; .@qty1 = 30; .@crafted = .@beads[12]; .@craftQty = 1; .cRate = 9;}
+				if (.@ups==4){ .@qi1 = .@beads[12]; .@qty1 = 40; .@crafted = .@beads[13]; .@craftQty = 1; .cRate = 8;}
+				if (.@ups==5){ .@qi1 = .@beads[13]; .@qty1 = 50; .@crafted = .@beads[14]; .@craftQty = 1; .cRate = 7;}
+				if (.@ups==6){ .@qi1 = .@beads[14]; .@qty1 = 60; .@crafted = .@beads[15]; .@craftQty = 1; .cRate = 6;}
+				if (.@ups==7){ .@qi1 = .@beads[15]; .@qty1 = 70; .@crafted = .@beads[16]; .@craftQty = 1; .cRate = 5;}
+				if (.@ups==8){ .@qi1 = .@beads[16]; .@qty1 = 80; .@crafted = .@beads[17]; .@craftQty = 1; .cRate = 4;}
+				if (.@ups==9){ .@qi1 = .@beads[17]; .@qty1 = 90; .@crafted = .@beads[18]; .@craftQty = 1; .cRate = 3;}
+				if (.@ups==10){.@qi1 = .@beads[18]; .@qty1 = 100; .@crafted = .@beads[19]; .@craftQty = 1; .cRate = 2;}
+			}
+
+			if(.@menu==3){ //DEX
+				if (.@ups==1){ .@qi1 = 7263; .@qty1 = 10; .@crafted = .@beads[20]; .@craftQty = 1; .cRate = 10;}
+				if (.@ups==2){ .@qi1 = .@beads[20]; .@qty1 = 20; .@crafted = .@beads[21]; .@craftQty = 1; .cRate = 10;}
+				if (.@ups==3){ .@qi1 = .@beads[21]; .@qty1 = 30; .@crafted = .@beads[22]; .@craftQty = 1; .cRate = 9;}
+				if (.@ups==4){ .@qi1 = .@beads[22]; .@qty1 = 40; .@crafted = .@beads[23]; .@craftQty = 1; .cRate = 8;}
+				if (.@ups==5){ .@qi1 = .@beads[23]; .@qty1 = 50; .@crafted = .@beads[24]; .@craftQty = 1; .cRate = 7;}
+				if (.@ups==6){ .@qi1 = .@beads[24]; .@qty1 = 60; .@crafted = .@beads[25]; .@craftQty = 1; .cRate = 6;}
+				if (.@ups==7){ .@qi1 = .@beads[25]; .@qty1 = 70; .@crafted = .@beads[26]; .@craftQty = 1; .cRate = 5;}
+				if (.@ups==8){ .@qi1 = .@beads[26]; .@qty1 = 80; .@crafted = .@beads[27]; .@craftQty = 1; .cRate = 4;}
+				if (.@ups==9){ .@qi1 = .@beads[27]; .@qty1 = 90; .@crafted = .@beads[28]; .@craftQty = 1; .cRate = 3;}
+				if (.@ups==10){.@qi1 = .@beads[28]; .@qty1 = 100; .@crafted = .@beads[29]; .@craftQty = 1; .cRate = 2;}
+			}
+
+			if(.@menu==4){ //AGI
+				if (.@ups==1){ .@qi1 = 7263; .@qty1 = 10; .@crafted = .@beads[30]; .@craftQty = 1; .cRate = 10;}
+				if (.@ups==2){ .@qi1 = .@beads[30]; .@qty1 = 20; .@crafted = .@beads[31]; .@craftQty = 1; .cRate = 10;}
+				if (.@ups==3){ .@qi1 = .@beads[31]; .@qty1 = 30; .@crafted = .@beads[32]; .@craftQty = 1; .cRate = 9;}
+				if (.@ups==4){ .@qi1 = .@beads[32]; .@qty1 = 40; .@crafted = .@beads[33]; .@craftQty = 1; .cRate = 8;}
+				if (.@ups==5){ .@qi1 = .@beads[33]; .@qty1 = 50; .@crafted = .@beads[34]; .@craftQty = 1; .cRate = 7;}
+				if (.@ups==6){ .@qi1 = .@beads[34]; .@qty1 = 60; .@crafted = .@beads[35]; .@craftQty = 1; .cRate = 6;}
+				if (.@ups==7){ .@qi1 = .@beads[35]; .@qty1 = 70; .@crafted = .@beads[36]; .@craftQty = 1; .cRate = 5;}
+				if (.@ups==8){ .@qi1 = .@beads[36]; .@qty1 = 80; .@crafted = .@beads[37]; .@craftQty = 1; .cRate = 4;}
+				if (.@ups==9){ .@qi1 = .@beads[37]; .@qty1 = 90; .@crafted = .@beads[38]; .@craftQty = 1; .cRate = 3;}
+				if (.@ups==10){.@qi1 = .@beads[38]; .@qty1 = 100; .@crafted = .@beads[39]; .@craftQty = 1; .cRate = 2;}
+			}
+
+			if(.@menu==5){ //VIT
+				if (.@ups==1){ .@qi1 = 7263; .@qty1 = 10; .@crafted = .@beads[40]; .@craftQty = 1; .cRate = 10;}
+				if (.@ups==2){ .@qi1 = .@beads[40]; .@qty1 = 20; .@crafted = .@beads[41]; .@craftQty = 1; .cRate = 10;}
+				if (.@ups==3){ .@qi1 = .@beads[41]; .@qty1 = 30; .@crafted = .@beads[42]; .@craftQty = 1; .cRate = 9;}
+				if (.@ups==4){ .@qi1 = .@beads[42]; .@qty1 = 40; .@crafted = .@beads[43]; .@craftQty = 1; .cRate = 8;}
+				if (.@ups==5){ .@qi1 = .@beads[43]; .@qty1 = 50; .@crafted = .@beads[44]; .@craftQty = 1; .cRate = 7;}
+				if (.@ups==6){ .@qi1 = .@beads[44]; .@qty1 = 60; .@crafted = .@beads[45]; .@craftQty = 1; .cRate = 6;}
+				if (.@ups==7){ .@qi1 = .@beads[45]; .@qty1 = 70; .@crafted = .@beads[46]; .@craftQty = 1; .cRate = 5;}
+				if (.@ups==8){ .@qi1 = .@beads[46]; .@qty1 = 80; .@crafted = .@beads[47]; .@craftQty = 1; .cRate = 4;}
+				if (.@ups==9){ .@qi1 = .@beads[47]; .@qty1 = 90; .@crafted = .@beads[48]; .@craftQty = 1; .cRate = 3;}
+				if (.@ups==10){.@qi1 = .@beads[48]; .@qty1 = 100; .@crafted = .@beads[49]; .@craftQty = 1; .cRate = 2;}
+			}
+
+			if(.@menu==6){ //LUK
+				if (.@ups==1){ .@qi1 = 7263; .@qty1 = 10; .@crafted = .@beads[50]; .@craftQty = 1; .cRate = 10;}
+				if (.@ups==2){ .@qi1 = .@beads[50]; .@qty1 = 20; .@crafted = .@beads[51]; .@craftQty = 1; .cRate = 10;}
+				if (.@ups==3){ .@qi1 = .@beads[51]; .@qty1 = 30; .@crafted = .@beads[52]; .@craftQty = 1; .cRate = 9;}
+				if (.@ups==4){ .@qi1 = .@beads[52]; .@qty1 = 40; .@crafted = .@beads[53]; .@craftQty = 1; .cRate = 8;}
+				if (.@ups==5){ .@qi1 = .@beads[53]; .@qty1 = 50; .@crafted = .@beads[54]; .@craftQty = 1; .cRate = 7;}
+				if (.@ups==6){ .@qi1 = .@beads[54]; .@qty1 = 60; .@crafted = .@beads[55]; .@craftQty = 1; .cRate = 6;}
+				if (.@ups==7){ .@qi1 = .@beads[55]; .@qty1 = 70; .@crafted = .@beads[56]; .@craftQty = 1; .cRate = 5;}
+				if (.@ups==8){ .@qi1 = .@beads[56]; .@qty1 = 80; .@crafted = .@beads[57]; .@craftQty = 1; .cRate = 4;}
+				if (.@ups==9){ .@qi1 = .@beads[57]; .@qty1 = 90; .@crafted = .@beads[58]; .@craftQty = 1; .cRate = 3;}
+				if (.@ups==10){.@qi1 = .@beads[58]; .@qty1 = 100; .@crafted = .@beads[59]; .@craftQty = 1; .cRate = 2;}
+			}
+			
+			// Quest Item #2
+			.@qi2 = 7134;	.@qty2 = 1;
+			
+			// Quest Item #3
+			.@qi3 = 1006;	.@qty3 = 1;
+
+			// Quest Item #4
+			if(.@ups==1){
+				if(.@menu==1){.@qi4 = 40632;} /* STR FOOD */
+				if(.@menu==2){.@qi4 = 40634;} /* INT FOOD */
+				if(.@menu==3){.@qi4 = 40635;} /* DEX FOOD */
+				if(.@menu==4){.@qi4 = 40633;} /* AGI FOOD */
+				if(.@menu==5){.@qi4 = 40637;} /* VIT FOOD */
+				if(.@menu==6){.@qi4 = 40636;} /* LUK FOOD */
+				.@qty4 = 1;
+			}
+			
+				mes .@npcName$;
+				mes "Hello there!";
+				mes "Your crafting a ^0000FF"+.@craft_item$+" +"+.@ups+"^000000.";
+				next;
+				
+				mes .@npcName$;
+				mes "I need these things:";
+				mes "^FF0000~ "+.@qty1+"x "+getitemname(.@qi1)+"";
+				mes "~ "+.@qty2+"x "+getitemname(.@qi2)+"";
+				mes "~ "+.@qty3+"x "+getitemname(.@qi3)+"";
+			if (.@ups==1){ mes "~ "+.@qty4+"x "+getitemname(.@qi4)+""; }
+				mes "^000000For only: ^FF0000"+.@craftQty+"x "+.@craft_item$+" +"+.@ups+"^000000";
+				next;
+		
+			if(select("Deal!:No Deal!")==2){ close;}		
+			
+			// Check the required item is completed
+			if(countitem(.@qi1)<.@qty1)||(countitem(.@qi2)<.@qty2)||(countitem(.@qi3)<.@qty3){ .missing = 1; 		
+			if (.@ups==1){if(countitem(.@qi4)<.@qty4){} }
+				mes .@npcName$;
+				mes "Im SORRY! incomplete materials come again later...";
+				close;
+			}
+		
+			if(rand(100)<.cRate) {
+				specialeffect2 154; 			// Effect Success refine
+				getitem .@crafted,.@craftQty;	// Crafted Item
+				delitem .@qi1,.@qty1;			// Deleted Quest item #1
+				delitem .@qi2,.@qty2;			// Deleted Quest item #2
+				delitem .@qi3,.@qty3;			// Deleted Quest item #3
+			if (.@ups==1){delitem .@qi4,.@qty4;}// Deleted Quest item #4
+				
+				mes "Here your item ^FF0000"+.@craftQty+"x "+getitemname(.@crafted)+" +"+.@ups+"^000000";
+				next;
+				
+				mes .@npcName$;
+				mes "Do you want me to craft some more?";
+				next;
+				
+				menu "Yes",Setup,"No",Quit;
+			} else {
+				specialeffect2 155; 			// Effect Failed refine
+				delitem .@qi1,.@qty1;			// Deleted Quest item #1
+			if (.@ups==1){delitem .@qi4,.@qty4;}// Deleted Quest item #4
+			
+				mes .@npcName$;
+				mes "I'm sorry, but I have failed to craft the ^FF0000"+getitemname(.@crafted)+" +"+.@ups+"^000000";
+				mes " ";
+				mes "Do you want me to try again?";
+				next;
+				
+				menu "Yes",Setup,"No",-;
+				}
+		Quit:	
+		close;		
+		
 
 }
