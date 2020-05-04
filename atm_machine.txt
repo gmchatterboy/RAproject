@@ -1,10 +1,10 @@
-///////////////////////////////////////
-// BESPREN RO ATM BANK				 //
-// Script by: Chatterboy			 //
-// Version 2.0                       //
-// Emulator: rAthena                 //
-// MySQL DB Script included          //
-//////////////////////////////////////
+/*-----------------------------------------------------
+	Script by: GM Chatterboy
+	Emulator: rAthena
+	Version: 2.0
+	Date: 04-29-2020
+	NPC: ATM Machine Bank
+------------------------------------------------------*/
 prontera,165,171,3	script	ATM	4_M_LIEMAN,{ // Edited as ATM view NPC
 
 			set .@adName$,"[ATM]";
