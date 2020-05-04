@@ -22,12 +22,13 @@ craftsman.
 @inventorylist_count - the number of items in these lists.
 */
 
-//----------------------------------------------------//
-// BRO - Express
-// Script by: Chatterboy
-// Emulator: rAthena
-//----------------------------------------------------//
-//prontera,123,198,0	script	Delivery	504,{
+/*-----------------------------------------------------
+	Script by: GM Chatterboy
+	Emulator: rAthena
+	Version: 1.1
+	Date: 04-29-2020
+	NPC: E-Padala (Express Delivery) 
+------------------------------------------------------*/
 -	script	Ybba	-1,{
 
 OnWhisperGlobal:
