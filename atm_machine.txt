@@ -1,0 +1,503 @@
+///////////////////////////////////////
+// BESPREN RO ATM BANK				 //
+// Script by: Chatterboy			 //
+// Version 2.0                       //
+// Emulator: rAthena                 //
+// MySQL DB Script included          //
+//////////////////////////////////////
+prontera,165,171,3	script	ATM	4_M_LIEMAN,{ // Edited as ATM view NPC
+
+			set .@adName$,"[ATM]";
+			switch(select("~ Information:~ ATM Register Account:~ Bank Deposit:~ Balance Inquiry and Withdraw:~ Account Settings")){
+
+	case 1: //Info
+			mes .@adName$;
+			mes "Welcome to Bespren RO ATM Machine System...";
+			next;
+			
+			mes .@adName$;
+			mes "On registering we will charge you for 100z/5cp/5kp as the initial deposit...";
+			next;
+			
+			mes .@adName$;
+			mes "If you deposit your zeny, cash points, kafra points we dont have the responsible for any lost if you let other know your ID and PIN.";
+			next;
+			
+			mes .@adName$;
+			mes "PIN number must not less than 7 digit and please dont let other know your information.";
+			next;
+			
+			mes .@adName$;
+			mes "The account ID who register can only have the previlage to change PIN/ZTCN, deactivate the account or retrieve.";
+			next;
+			
+			mes .@adName$;
+			mes "This ATM System can use any account who want to withdraw/deposit so you can use it any time you want to use...";
+			next;
+			
+			mes .@adName$;
+			mes "ATM maximum zeny can handle is 99,999,999,999z";
+			close;
+
+
+	case 2://===== Register ATM Account =====
+			REG:// Fetch Data in MySQL Database
+			query_sql "SELECT `atm_id`,`account_id` FROM atm_bank WHERE `account_id` = "+getcharid(3)+";",.@atm_id,.@acc_id;
+			set .@charid,getcharid(3);
+			
+			
+			if (.@acc_id == .@charid){ // Fetch if the player is already Registered
+				query_sql "SELECT `atm_id` FROM atm_bank WHERE `account_id` = "+getcharid(3)+";",.@atmid;
+				mes .@adName$;
+				mes "You are already registered before!";
+				mes "Your ID is: ^08088A"+.@atmid+"^000000 ";
+				close;
+			}
+				
+			set @atm_idreg,rand(1000000,99999999); // Account ID Generator
+			
+				mes .@adName$;
+				mes "Hello!!! Registration ATM account is automated id gerated.";
+				next;
+				
+				mes .@adName$;
+				mes "Please enter your PIN to use any time you need to withdraw, not lessthan 4 digit and a maximum of 7 digit";
+				next;
+			
+			while( input( @pincode, 1111, 9999999 ) != 0 ) {
+				mes .@adName$;
+				mes "--- ^DF013AERROR 404^000000 ---";
+				mes " Please enter PIN not less than 4 digit upto maximum of 7 digit.";
+				soundeffect "error_pin.wav",0;
+				close;}
+				
+				mes .@adName$;
+				mes "Please enter your ZTCN to use for Zeny Transfer, not lessthan 4 digit and a maximum of 7 digit";
+				next;
+			
+			while( input( @ztcn, 1111, 9999999 ) != 0 ) {
+				mes .@adName$;
+				mes "--- ^DF013AERROR 404^000000 ---";
+				mes " Please enter ZTCN not less than 4 digit upto maximum of 7 digit.";
+				soundeffect "error_pin.wav",0;
+				close;}
+				
+			if (@pincode == @ztcn){ 
+				mes .@adName$; 
+				mes "You enter PIN and ZTCN are identical, For security reason please enter different code, safe from hacking!!!";
+				soundeffect "error_pin.wav",0;
+				next; goto REG;}
+				
+			if(Zeny<100){ // Lessthan 100z is not allowed to open account
+				mes .@adName$;
+				mes "You dont have enough Zeny make sure you have 100z or more for initial deposit...";
+				soundeffect "error_pin.wav",0;
+				close;}
+				
+			query_sql "SELECT `atm_id` FROM atm_bank WHERE `atm_id` = "+@atm_idreg+";",.@atmid;	
+			if (.@atmid == 0){// verify if there is existing account number in database
+				mes .@adName$;
+				mes "Congrats! Your account";
+				sleep2 rand(5,2000); // Its like on progress ^_^
+				mes "ID: ^08088A"+@atm_idreg+"^000000 ";
+				mes "PIN: ^08088A"+@pincode+"^000000";
+				mes "ZTCN: ^08088A"+@ztcn+"^000000";
+				mes "Deposit: ^08088A100z^000000";
+				Zeny -= 100;
+				query_sql "INSERT INTO `atm_bank` (`atm_id`,`account_id`,`pincode`,`zeny`,`cpoints`,`kpoints`,`ztcn`) VALUES ("+@atm_idreg+",'"+getcharid(3)+"',"+@pincode+",'100','0','0',"+@ztcn+")",@atm$; 
+				soundeffect "deposit.wav",0;
+				close;}
+				
+			else{
+				mes .@adName$;
+				mes "Please Try again after a few minutes to register, ill check first the available ID for you...";
+				soundeffect "error_pin.wav",0;
+				close;}
+		
+			
+	case 3: //Bank Deposit
+			
+				mes .@adName$;
+				mes "Please Input the Account ID:";
+				next;
+				
+			while(input(.@atm_id,1,99999999) !=0){
+				mes .@adName$;
+				mes "--- ^DF013AERROR 404^000000 ---";
+				mes "Please Enter Account ID not lessthan 7 digit to maximum of 10 digit.";
+				soundeffect "error_pin.wav",0;
+				close;}
+				next;
+				
+			// Verify if the Account is excist
+			query_sql "SELECT `atm_id`FROM atm_bank WHERE `atm_id` = '"+.@atm_id+"';",.@acc;
+			if (!getarraysize(.@acc)){
+				mes .@adName$;
+				mes "--- ^DF013AERROR 404^000000 ---";
+				mes "Account ID does not excist please try again...";
+				soundeffect "error_pin.wav",0;
+				close;}
+
+			// Verify if the Player use his/her own Account ID. IF TRUE the pin is not needed. 
+			query_sql "SELECT `pincode`FROM atm_bank WHERE `atm_id` = '"+.@atm_id+"';",.@pin;
+			query_sql "SELECT `pincode`FROM atm_bank WHERE `account_id` = '"+getcharid(3)+"';",.@pcode;
+			if(.@acc == .@atm_id)&& (.@pin == .@pcode){goto BypassPin1;}				
+				
+				
+				mes .@adName$;
+				mes "Please Input the ZTCN:";
+				mes "(Zeny Tracking Control Number)";
+				next;
+
+			input.@code;
+			
+			// Verify the account ID and PIN is match
+			query_sql "SELECT `atm_id`FROM atm_bank WHERE `atm_id` = '"+.@atm_id+"';",.@acc;
+			query_sql "SELECT `ztcn`FROM atm_bank WHERE `atm_id` = '"+.@atm_id+"';",.@ztcn;
+
+			if(.@acc == .@atm_id)&& (.@code == .@ztcn){
+			
+				BypassPin1:
+				mes .@adName$;
+				mes "Please Input the amount you want to deposit...";
+				next;
+			while( input( @zeny, 1, Zeny ) != 0 ) {
+				mes .@adName$;
+				mes "--- ^DF013AERROR 404^000000 ---";
+				mes "Put a Zeny between 1z to "+Zeny+"z.";
+				soundeffect "error_pin.wav",0;
+				close;}
+				
+			if(Zeny<@zeny){
+				mes .@adName$;
+				mes "Im Sorry you dont have enough zeny to deposit or you entered the wrong amount!";
+				soundeffect "error_pin.wav",0;
+				close;}	
+				
+				//Check balance + Account ID
+				query_sql "SELECT `zeny`,`account_id` FROM atm_bank WHERE `atm_id` = '"+.@atm_id+"';",.@balance$,.@accid;
+				.@balance$ = callfunc("beautifyNumber", .@balance$, ",");
+				
+				//set .@addzeny$,.@balance$+@zeny; //Balance + Deposit
+				Zeny -= @zeny; // Deposit
+					mes .@adName$;
+					mes "~^DF013ABespren RO ATM^000000~";
+					mes "Account ID: ^08088A"+.@acc+"^000000 ";
+					mes "Zeny Deposit : ^08088A"+callfunc("beautifyNumber", @zeny, ",")+"^000000 ";
+					
+				//Update zeny deposit
+				query_sql("UPDATE `atm_bank` SET `zeny` = `zeny` + "+@zeny+" WHERE `atm_id` = "+.@acc+";");// Update data in MySQL Database
+				
+				sleep2 rand(5,2000); // Its like on progress ^_^
+				
+				if(getcharid(3)==.@accid){
+					query_sql "SELECT `zeny`,`account_id` FROM atm_bank WHERE `atm_id` = '"+.@atm_id+"';",.@balance$,.@accid;
+					mes "Total Balance: ^08088A"+callfunc("beautifyNumber", .@balance$, ",")+"^000000 ";
+					}
+					
+				mes "^01DF01Thank you for Banking with us...^000000";
+				soundeffect "deposit.wav",0;
+				close;
+			
+			
+			}
+				mes .@adName$;
+				mes "Account ID and PIN/ZTCN did not MATCH...";
+				soundeffect "error_pin.wav",0;
+				close;			
+			
+			
+			
+
+	case 4: // Balance Inquiry and Withdraw
+				mes .@adName$;
+				mes "Please Input the Account ID:";
+				next;
+				
+			while(input(.@atm_id,1,99999999) !=0){
+				mes .@adName$;
+				mes "--- ^DF013AERROR 404^000000 ---";
+				mes "Please Enter Account ID not lessthan 7 digit to maximum of 8 digit.";
+				soundeffect "error_pin.wav",0;
+				close;}
+
+			// Fetch data in MySQL Database
+			query_sql "SELECT `atm_id`FROM atm_bank WHERE `atm_id` = '"+.@atm_id+"';",.@acc;
+			query_sql "SELECT `pincode`FROM atm_bank WHERE `atm_id` = '"+.@atm_id+"';",.@pin;
+			query_sql "SELECT `zeny`,`cpoints`,`kpoints` FROM atm_bank WHERE `atm_id` = '"+.@atm_id+"';",.@balance$,.@cpnts,.@kpnts;
+			.@balance$ = callfunc("beautifyNumber", .@balance$, ",");
+				
+			if (!getarraysize(.@acc)){ // Verify if the Account is excist
+				mes .@adName$;
+				mes "--- ^DF013AERROR 404^000000 ---";
+				mes "Account ID does not excist please try again...";
+				soundeffect "error_pin.wav",0;
+				close;
+				}
+
+			// Verify if the Player use his/her own Account ID. IF TRUE the pin is not needed.
+			query_sql "SELECT `pincode`FROM atm_bank WHERE `atm_id` = '"+.@atm_id+"';",.@pin;
+			query_sql "SELECT `pincode`FROM atm_bank WHERE `account_id` = '"+getcharid(3)+"';",.@pcode;
+			if(.@acc == .@atm_id)&& (.@pin == .@pcode){goto BypassPin2;}	
+			
+				mes .@adName$;
+				mes "Please Input the PIN:";
+				next;
+				
+			input .@pincd;
+
+			if(.@acc == .@atm_id)&& (.@pin == .@pincd){ // Verify the account ID and PIN is match
+
+				BypassPin2:
+				mes .@adName$;
+				mes "Account ID: ^08088A"+.@acc+"^000000 ";
+				sleep2 rand(5,2000); // Its like on progress ^_^
+				mes "Available balance:";
+				mes "~ ^08088A"+.@balance$+"^000000 Zeny";
+				mes "~ ^08088A"+.@cpnts+"^000000 Cash pts";
+				mes "~ ^08088A"+.@kpnts+"^000000 Kafra pts";
+				next;
+				
+			if(select("Continue Withdraw?:Cancel")==2){close;}
+			
+				mes .@adName$;
+				mes "Available balance: ^08088A"+.@balance$+"^000000 ";
+				mes "Please Input the amount you want to Withdraw...";
+				next;
+
+				
+			while( input( @zeny, 1, 1000000000 ) != 0 ) { // 1b maximum input
+				mes .@adName$;
+				mes "--- ^DF013AERROR 404^000000 ---";
+				mes "Put a Zeny between 1z to "+.@balance$+"z.";
+				soundeffect "error_pin.wav",0;
+				close;}
+
+			//Check if the account is 0 Balance
+			query_sql("SELECT `zeny` FROM `atm_bank` WHERE account_id="+getcharid(3)+" LIMIT 1",.@Monybalance);
+			if (!.@Monybalance || @zeny > .@Monybalance) {
+				mes .@adName$;
+				mes "Im Sorry this account is ZERO balance to Withdraw or you entered the wrong amount!";
+				soundeffect "error_pin.wav",0;
+            close;}
+
+				
+			if(Zeny == 1000000000 || (Zeny + @zeny)>=1000000001){ //Check if Character hold 1B Zeny or Zeny will be exceed on withdrawal
+				mes .@adName$;
+				mes "You have already max of 1B, Try again later...";
+				soundeffect "error_pin.wav",0;
+				close;
+				}
+
+				mes .@adName$;
+				mes "The Account:";
+				mes "ID: ^08088A"+.@acc+"^000000 ";
+			
+				Zeny += @zeny;
+				query_sql("UPDATE `atm_bank` SET `zeny` = `zeny` - "+@zeny+" WHERE `atm_id` = "+.@acc+";");// Update data in MySQL Database
+
+				sleep2 rand(5,2000); // Its like on progress ^_^
+				dispbottom "You Recieve ^08088A"+callfunc("beautifyNumber", @zeny, ",")+"^000000 zeny ";
+				query_sql "SELECT `zeny`FROM atm_bank WHERE `atm_id` = '"+.@atm_id+"';",.@balance$; //Gather Balance
+				mes "Zeny available remaining balance is: ^08088A"+callfunc("beautifyNumber", .@balance$, ",")+"^000000 ";
+				mes "^01DF01Thank you for Banking with us...^000000";
+				soundeffect "withdraw.wav",0;
+				close;}
+				
+				mes .@adName$;
+				mes "Account ID and PIN did not MATCH...";
+				soundeffect "error_pin.wav",0;
+				close;
+				
+	case 5: //Account Settings
+	
+			// Fetch data in MySQL Database
+			query_sql "SELECT `atm_id`,`account_id`,`pincode`,`zeny`,`ztcn` FROM `atm_bank` WHERE `account_id` = '"+getcharid(3)+"';",.@acc,.@acc_id,.@pin,.@balance$,.@ztcn;
+			.@balance$ = callfunc("beautifyNumber", .@balance$, ",");
+			
+			if (.@acc_id == getcharid(3)){
+				mes .@adName$;
+				mes "What can i do for you?";
+				next;
+			
+			switch(select("~ PIN/ZTCN Recovery:~ Change PIN:~ Change ZTCN:~ Account Termination")){
+				
+			case 1:// PIN Recovery
+			
+				mes .@adName$;
+				mes "Account ID: ^08088A"+.@acc+"^000000 ";
+				sleep2 rand(5,2000); // Its like on progress ^_^
+				mes "PIN: ^08088A"+.@pin+"^000000";
+				mes "ZTCN: ^08088A"+.@ztcn+"^000000";
+				mes "^01DF01Thank you for Banking with us...^000000";
+				close;
+			
+			case 2:// Change PIN
+				mes .@adName$;
+				mes "To change the PIN please input your ^01DF01OLD PIN^000000 number...";
+				next;
+				
+			while(input(.@oldpin,1,99999999) !=0){
+				mes .@adName$;
+				mes "--- ^DF013AERROR 404^000000 ---";
+				mes "Put a number not less than 7 digit to maximum of 8.";
+				soundeffect "error_pin.wav",0;
+				close;}
+			
+				if(.@acc_id == getcharid(3))&& (.@pin == .@oldpin){ // Verify the account ID and PIN is match
+				mes .@adName$;
+				mes "Please enter ^01DF01NEW PIN^000000 number minimum of 8 digit...";
+				next;
+				
+			while(input(.@newpin,1,99999999) !=0){
+				mes .@adName$;
+				mes "--- ^DF013AERROR 404^000000 ---";
+				mes "Put a number not less than 7 digit to maximum of 8.";
+				soundeffect "error_pin.wav",0;
+				close;}
+				
+				mes .@adName$;
+				mes "Account ID: ^08088A"+.@acc+"^000000 ";				
+				mes "PIN: ^08088A********^000000";
+				sleep2 rand(5,2000); // Its like on progress ^_^
+				mes "Status: ^DF013A- UPDATE -^000000 ";
+				mes "^01DF01Thank you for Banking with us...^000000";
+				query_sql("UPDATE `atm_bank` SET `pincode` = "+.@newpin+" WHERE `atm_id` = "+.@acc+";"); // Update data in MySQL Database
+				close;
+				
+			}else{
+					mes .@adName$;
+					mes "--- ^DF013AACCESS DENIED^000000 ---";
+					mes "Were Sorry your PIN did not match or you are not Authorized...";
+					soundeffect "error_pin.wav",0;
+				close;}
+				
+			case 3: //Change ZTCN
+				mes .@adName$;
+				mes "To change the ZTCN please input your ^01DF01OLD ZTCN^000000 number...";
+				next;
+				
+			while(input(.@oldztcn,1,99999999) !=0){
+				mes .@adName$;
+				mes "--- ^DF013AERROR 404^000000 ---";
+				mes "Put a number not less than 7 digit to maximum of 8.";
+				soundeffect "error_pin.wav",0;
+				close;}
+			
+				if(.@acc_id == getcharid(3))&& (.@ztcn == .@oldztcn){ // Verify the account ID and PIN is match
+				mes .@adName$;
+				mes "Please enter ^01DF01NEW PIN^000000 number minimum of 8 digit...";
+				next;
+				
+			while(input(.@newztcn,1,99999999) !=0){
+				mes .@adName$;
+				mes "--- ^DF013AERROR 404^000000 ---";
+				mes "Put a number not less than 7 digit to maximum of 8.";
+				soundeffect "error_pin.wav",0;
+				close;}
+				
+				mes .@adName$;
+				mes "Account ID: ^08088A"+.@acc+"^000000 ";				
+				mes "ZTCN: ^08088A********^000000";
+				sleep2 rand(5,2000); // Its like on progress ^_^
+				mes "Status: ^DF013A- UPDATE -^000000 ";
+				mes "^01DF01Thank you for Banking with us...^000000";
+				query_sql("UPDATE `atm_bank` SET `ztcn` = "+.@newztcn+" WHERE `atm_id` = "+.@acc+";"); // Update data in MySQL Database
+				close;
+				
+				}else{
+				mes .@adName$;
+				mes "--- ^DF013AACCESS DENIED^000000 ---";
+				mes "Were Sorry your ZTCN did not match or you are not Authorized...";
+				soundeffect "error_pin.wav",0;
+				close;}
+				
+			case 4: //Account Termination
+				if (.@acc_id == getcharid(3)){
+				mes .@adName$;
+				mes "If you want to terminate your account, make sure your account is ZERO balance...";
+				next;
+				if(select("Terminate Account:Cancel")==1){
+				query_sql("SELECT `zeny` FROM `atm_bank` WHERE account_id="+getcharid(3)+" LIMIT 1",.@Monybalance);
+					if (!.@Monybalance) { // Verify if the account is in Zero balance
+						mes .@adName$; 
+						mes "Your account is now no longer in our database"; 
+						query_sql "DELETE FROM `atm_bank` WHERE `account_id`='"+getcharid(3)+"'";
+						close;}
+					else{
+						mes .@adName$; 
+						mes "Your account still have balance...";
+						mes "Balance: ^DF013A"+.@balance$+"^000000 ";
+						close;}
+					}
+						
+				mes .@adName$;
+				mes "Good choice...";
+				mes "Thank you for Banking with us~~~";
+				close;				
+				}
+				mes .@adName$;
+				mes "You dont have ATM Account!";
+				close;
+			}// End Account settings
+
+		}// No account
+			mes .@adName$;
+			mes "You dont have ATM Account!";
+			close;
+	}// End ATM Menu
+		close;
+		
+}
+
+/*
+
+CREATE TABLE IF NOT EXISTS `atm_bank` (
+  `number` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `atm_id` int(11) unsigned NOT NULL,
+  `account_id` int(11) unsigned NOT NULL,
+  `pincode` int(11) unsigned NOT NULL,
+  `zeny` bigint(20) unsigned NOT NULL default '0',
+  `cpoints` int(11) unsigned NOT NULL default '0',
+  `kpoints` int(11) unsigned NOT NULL default '0',
+  `ztcn` int(11) unsigned NOT NULL default '123456',
+PRIMARY KEY (`number`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;
+
+
+ALTER TABLE `atm_bank` ADD `ztcn` int(11) NOT NULL DEFAULT '123456';
+*/
+
+gonryun,166,117,4	duplicate(ATM)	ATM#gon	10209
+izlude,116,165,4	duplicate(ATM)	ATM#izl	10209
+louyang,227,105,4	duplicate(ATM)	ATM#lou	10209
+
+
+
+//===== Function Comment: =========================================================================================================
+//= Function description: returns any number in a more humanly readable way; e.g. 1000 > 1.000
+//= Function accepts two arguments:
+//= - getarg(0): the number to beautify
+//= - getarg(1): the symbol to sparate number groups
+//=   ("." for values like 100.000)
+//=================================================================================================================================
+function	script	beautifyNumber	{
+	.@number$  = getarg(0);
+	.@limiter$ = getarg(1);
+	.@length   = getstrlen(.@number$);
+	.@numberSeparated$ = "";
+	
+	if ("" != .@number$ &&  3 < .@length) {
+	
+		while (.@length > 3) {
+		
+			.@numberSeparated$ = ("" != .@numberSeparated$) ? substr(.@number$, .@length - 3, .@length - 1) + .@limiter$ + .@numberSeparated$ : substr(.@number$, .@length - 3, .@length - 1);
+			.@length = .@length - 3;
+		}
+		
+		.@numberSeparated$ = substr(.@number$, 0,  .@length - 1) + .@limiter$ + .@numberSeparated$;
+	}
+		
+	return (.@numberSeparated$ != "") ? .@numberSeparated$ : .@number$;
+}
+
