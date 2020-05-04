@@ -1,33 +1,24 @@
-//*********************************************************************
-//	VIP System for eAthena servers Version 3.0
-//*********************************************************************
-//	It allows you to boost experience and drop rate for players who donate
-//	for a specified amount of days.
-//	It makes use of account's GM Levels to specify the account type,
-//	by default values are these:
-//	all of them, of course, customizable ;).
-// ¡Therefore, you can also set =atcommands= for every account level in
-// [yourserver]/conf/atcommand_athena.conf ! Isn't that great?! :D
-//	In other words, VIP players can have access to more @commands than
-//	normal users if you want. This will add more value to the service.
-//
-//	Add, List, Modify and Remove VIP accounts via whisper to this NPC.
-//	Manage VIP accounts in-game! Just whisper any text to the npc "vip"
-//	to access the VIP management menu.
-//
-//	This script requires some database modifications for it to work,
-//	check them at the original post where I posted this script.
-//	URI:	
-//
-//	Created by: Victor H. Olvera (VicThor)
-//	If you like this, please donate to paypal: victorolvera.01@gmail.com
-//	I'd really like to make more scripts like this, so help if you can!
-//
-//	If you want any special modification or adaptation of this script,
-//	please! feel free to e-mail me at vhocar@gmail.com I'm $ure I can
-//	provide you with something according to your need$ :)
-// Modify by java@rathenaorg or java@idathena.org ====> compatible for both servers
-//¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+/*-----------------------------------------------------
+	Script by: GM Chatterboy
+	Emulator: rAthena
+	Version: 2.0
+	Date: 04-29-2020
+	NPC: VIP System
+	
+	It allows you to boost experience and drop rate for players who donate
+	for a specified amount of days.
+	It makes use of account's GM Levels to specify the account type,
+	by default values are these:
+	all of them, of course, customizable ;).
+ ¡Therefore, you can also set =atcommands= for every account level in
+ [yourserver]/conf/atcommand_athena.conf ! Isn't that great?! :D
+	In other words, VIP players can have access to more @commands than
+	normal users if you want. This will add more value to the service.
+
+	Add, List, Modify and Remove VIP accounts via whisper to this NPC.
+	Manage VIP accounts in-game! Just whisper any text to the npc "vip"
+	to access the VIP management menu.
+------------------------------------------------------*/
 -	script	vip	-1,{
 
 OnInit: // Auto Initialize when the server is Online
@@ -459,12 +450,6 @@ Onhomevo:
 
     end;
 }
-
-
-
-
-
-
 
 /*
 -- Table structure for table `vip_db`
